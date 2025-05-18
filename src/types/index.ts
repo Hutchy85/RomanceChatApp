@@ -1,17 +1,12 @@
-export interface EmotionalState {
-  affection_wife: number;
-  trust_wife: number;
-  mood_wife: string;
-  memories_wife: Record<string, boolean>;
-  character_name: string;
-}
-
-export interface Message {
+export type Message = {
   id: string;
-  text: string;
-  type: 'system' | 'user' | 'wife';
+  text?: string;
+  image?: number;
+  type: 'user' | 'assistant' | 'system';
   timestamp: string;
-}
+  name?: string;
+  avatar?: number;
+};
 
 export interface Story {
   id: string;
@@ -20,17 +15,15 @@ export interface Story {
   duration: string;
   theme: string;
   image: string;
+  prologue: string;
+  characterName: string;
+  systemPrompt: string;
 }
 
 export interface SavedSession {
   id: string;
+  storyId: Story['id'];
+  currentStep: number;
   date: string;
-  storyId: string;
-  characterName: string;
-  emotionalState: {
-    affection_wife: number;
-    trust_wife: number;
-    mood_wife: string;
-  };
   messages?: Message[];
 }

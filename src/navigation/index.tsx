@@ -6,19 +6,25 @@ import { createStackNavigator } from '@react-navigation/stack';
 import StorySelectionScreen from '../screens/StorySelectionScreen';
 import PrologueScreen from '../screens/PrologueScreen';
 import ChatScreen from '../screens/ChatScreen';
+import StorySceneScreen from '../screens/StorySceneScreen';
 
 // Define the navigation parameters
 export type RootStackParamList = {
   StorySelection: undefined;
   Prologue: { storyId: string };
-  Chat: { storyId: string; restore?: boolean };
+  StoryScene: { storyId: string; sceneId: string };
+  Chat: { storyId: string; sceneId: string; startNewSession?: boolean };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const Navigation = () => {
   return (
-    <NavigationContainer>
+  <NavigationContainer
+    onStateChange={(state) => {
+      console.log('Current state:', state);
+    }}
+  >
       <Stack.Navigator
         initialRouteName="StorySelection"
         screenOptions={{
@@ -39,20 +45,28 @@ const Navigation = () => {
         <Stack.Screen 
           name="Prologue" 
           component={PrologueScreen} 
-          options={({ route }) => ({ 
+          options= {{ 
             title: 'Story Prologue',
             headerBackTitle: 'Back'
-          })}
+          }}
         />
-        <Stack.Screen 
-          name="Chat" 
-          component={ChatScreen} 
-          options={({ route }) => ({ 
-            title: 'Chat',
-            headerBackTitle: 'Exit',
-            headerLeft: () => null, // Remove back button for chat screen
-          })}
+        <Stack.Screen
+          name="StoryScene"
+          component={StorySceneScreen}
+          options={{
+            title: 'Story Scene',
+            headerBackTitle: 'Back',
+          }}
         />
+        <Stack.Screen
+  name="Chat"
+  component={ChatScreen}
+  options={{
+    title: 'Chat',
+    headerBackTitle: 'Exit',
+    headerLeft: () => null,
+  }}
+/>
       </Stack.Navigator>
     </NavigationContainer>
   );
