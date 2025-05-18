@@ -121,31 +121,128 @@ imageTriggers: [
 sceneTriggers: [
   {
     keyword: 'home',
-    nextSceneIndex: 'party',
+    nextSceneIndex: 'partyArrival',
   },
 ],
-nextSceneIndex: 'party',
 },
 {
-  id: 'partyArival',
+  id: 'partyArrival',
   type: 'story',
-  text: "The party was in full swing. Fairy lights flickered around the room, and 'Jingle Bell Rock' filled the air. You stood by the drinks table, trying to smile as your coworkers told the same old office stories. Holly was radiant in a red dress, laughing easily with the other wives, her presence lighting up the room. Your boss, Mike, stood loudly holding court in the middle of the room, already half-cut.Holly leaned in. 'Wow, what an arsehole,' she whispered.",
+  text: "The party was in full swing. Fairy lights flickered around the room, and 'Jingle Bell Rock' filled the air. You stood by the drinks table, trying to smile as your coworkers told the same old office stories. Holly was radiant in a red dress, laughing easily with the other wives, her presence lighting up the room. Your boss, Mike, stood loudly holding court in the middle of the room, already half-cut. Holly leaned in. 'Wow, what an arsehole,' she whispered.",
   choices: [
     {
-        text: "Laugh quietly and agree.",
-        nextSceneIndex: "party_scene_2a",
-      },
-      {
-        text: "Stay quiet, unsure how to respond.",
-        nextSceneIndex: "party_scene_2b",
-      },
-      {
-        text: "Say you want to leave already.",
-        nextSceneIndex: "party_scene_leave_early_check",
+      text: "Laugh quietly and agree.",
+      nextSceneIndex: 'party_scene_2a'
+    },
+    {
+      text: "Stay quiet, unsure how to respond.",
+      nextSceneIndex: 'party_scene_2b'
+    },
+    {
+      text: "Say you want to leave already.",
+      nextSceneIndex: 'party_scene_leave_early_check'
+    }
+  ]
+},
+{
+  id: 'party_scene_2a',
+  type: 'story',
+  text: "'Yeah, he's a real treat,' you replied with a smirk. Holly grinned. 'Good, thought it was just me.' Just then, Mike stumbled over, his eyes roaming shamelessly over Holly. 'Well, well, look what we have here,' he slurred.",
+  nextSceneIndex: 'party_scene_mike'
+},
+{
+  id: 'party_scene_2b',
+  type: 'story',
+  text: "You stayed silent, not sure what to say. Holly gave you a sideways glance but didn’t push it. Just then, Mike stumbled over, his eyes roving all over Holly. 'Well, well, look what we have here,' he slurred.",
+  nextSceneIndex: 'party_scene_mike'
+},
+{
+  id: 'party_scene_mike',
+  type: 'story',
+  text: "'Hi Mike,' you said, but he barely acknowledged you. He turned to Holly with a sleazy grin. 'You must be the famous Holly. I see why John's so smug.' Your fists clenched involuntarily.",
+  choices: [
+    {
+      text: "Confront Mike immediately.",
+      nextSceneIndex: 'party_scene_confront'
+    },
+    {
+      text: "Stay silent and let Holly deal with it.",
+      nextSceneIndex: 'party_scene_holly_handles'
+    }
+  ]
+},
+{
+  id: 'party_scene_confront',
+  type: 'story',
+  text: "'What exactly do you mean by that, Mike?' you asked, your tone tight. Mike laughed. 'Relax mate, just having a laugh.' Holly cut in coolly. 'I'll have a white wine, thanks.' Mike, deflated, shuffled off toward the bar.",
+  nextSceneIndex: 'party_scene_check_in'
+},
+{
+  id: 'party_scene_holly_handles',
+  type: 'story',
+  text: "You kept silent, letting Holly deal with it. 'I'll have a white wine, thanks,' she said flatly. Mike chuckled awkwardly and shuffled away toward the bar.",
+  nextSceneIndex: 'party_scene_check_in'
+},
+{
+  id: 'party_scene_check_in',
+  type: 'story',
+  text: "'You alright?' you asked as Holly turned back to you. 'Yeah,' she said, smiling faintly. 'What a creep though.' The music shifted to 'Last Christmas' as people kept drinking. You glanced around, unsure if you wanted to stay much longer.",
+  choices: [
+    {
+      text: "'Let's leave now, this place is grim.'",
+      nextSceneIndex: 'party_scene_leave'
+    },
+    {
+      text: "'One more drink then we'll go.'",
+      nextSceneIndex: 'party_scene_one_more'
+    },
+    {
+      text: "'I should have punched him.'",
+      nextSceneIndex: 'party_scene_holly_reacts'
+    }
+  ]
+},
+{
+  id: 'party_scene_leave',
+  type: 'story',
+  text: "You took Holly’s hand. 'Let’s get out of here.' She smiled, relieved. You left the party behind, stepping out into the cold night air together.",
+  nextSceneIndex: 'next_main_story_scene'
+},
+{
+  id: 'party_scene_one_more',
+  type: 'story',
+  text: "'One more drink then we'll go,' you suggested. 'Alright,' Holly agreed. 'But you owe me pizza on the way home.' You both laughed.",
+  nextSceneIndex: 'next_main_story_scene'
+},
+{
+  id: 'party_scene_holly_reacts',
+  type: 'story',
+  text: "'I should've punched him,' you grumbled. Holly frowned. 'And make a scene? Nah. Not worth it.' You sensed a flicker of disappointment.",
+  nextSceneIndex: 'party_scene_leave'
+},
+{
+  id: 'party_scene_leave_early_check',
+  type: 'story',
+  text: "'I kinda wanna leave already,' you admitted. 'Bit early, isn't it?' Holly asked.",
+  choices: [
+    {
+      text: "'Yeah, let's stick it out a bit longer.'",
+      nextSceneIndex: 'party_scene_2a'
+    },
+    {
+      text: "'Nah, let's just go.'",
+      nextSceneIndex: 'party_scene_leave'
+    }
+  ]
+},
+{
+      id: 'next_main_story_scene',
+      type: 'chat',
+      characterName: 'Mike',
+      systemPrompt:
+        `You are Mike, John's boss. You are a bit of a bully and can be arrogant and obnoxious at times. You have a tendency to make inappropriate comments, especially when you're drunk. You don't care about people's feelings and often put them down to make yourself feel superior.`,
       }
-    ]
-  }
-],
+]
   },
 
 

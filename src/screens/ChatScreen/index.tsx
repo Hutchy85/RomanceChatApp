@@ -249,7 +249,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     borderRadius: 8,
     alignItems: 'center',
   }}
-  onPress={() => navigation.navigate('StoryScene', { storyId, sceneId: 'partyArival' })}
+  onPress={() => navigation.navigate('StoryScene', { storyId, sceneId: 'partyArrival' })}
 >
   <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Skip to Party (Test)</Text>
 </TouchableOpacity>

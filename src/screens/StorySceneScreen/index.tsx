@@ -19,37 +19,75 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   const story = stories.find(s => s.id === storyId);
   const scene = story?.scenes.find(s => s.id === sceneId);
 
+  if (!story) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>Story not found</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!scene) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>Scene not found.</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-  <ScrollView contentContainerStyle={styles.scrollContainer}>
-    <Text style={styles.title}>
-      {story ? story.title : 'Story not found'}
-    </Text>
-    <Text style={styles.sceneText}>
-      {scene ? scene.text || 'No scene text provided.' : 'Scene not found.'}
-    </Text>
-    {scene?.choices && scene.choices.length > 0 && (
-      <View>
-        {scene.choices.map((choice, index) => (
-  <View key={index} style={styles.choiceButton}>
-    <Button
-      title={choice.text}
-      onPress={() => {
-        if (choice.nextSceneIndex) {
-          navigation.navigate('StoryScene', { storyId, sceneId: choice.nextSceneIndex });
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.title}>{story.title}</Text>
+        <Text style={styles.sceneText}>{scene.text || 'No scene text provided.'}</Text>
+
+        {scene.choices && scene.choices.length > 0 && (
+          <View>
+            {scene.choices.map((choice, idx) => (
+              <View key={choice.text + idx} style={styles.choiceButton}>
+                <Button
+  title={choice.text}
+  onPress={() => {
+    if (choice.nextSceneIndex !== undefined && choice.nextSceneIndex !== null) {
+      const nextScene = story.scenes.find(s => s.id === choice.nextSceneIndex);
+      if (nextScene) {
+        if (nextScene.type === 'chat') {
+          navigation.navigate('Chat', { storyId, sceneId: nextScene.id, startNewSession: true });
+        } else {
+          navigation.navigate('StoryScene', { storyId, sceneId: nextScene.id });
         }
-      }}
-    />
-  </View>
-))}
+      }
+    }
+  }}
+/>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {!scene.choices?.length && scene.nextSceneIndex !== undefined && (
+          <View style={styles.choiceButton}>
+           <Button
+  title="Continue"
+  onPress={() => {
+    const nextScene = story.scenes.find(s => s.id === scene.nextSceneIndex);
+    if (nextScene) {
+      if (nextScene.type === 'chat') {
+        navigation.navigate('Chat', { storyId, sceneId: nextScene.id, startNewSession: true });
+      } else {
+        navigation.navigate('StoryScene', { storyId, sceneId: nextScene.id });
+      }
+    }
+  }}
+/>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.buttonContainer}>
+        <Button title="Go Back" onPress={() => navigation.goBack()} />
       </View>
-    )}
-  </ScrollView>
-  
-  <View style={styles.buttonContainer}>
-    <Button title="Go Back" onPress={() => navigation.goBack()} />
-  </View>
-</SafeAreaView>
+    </SafeAreaView>
   );
 };
 
