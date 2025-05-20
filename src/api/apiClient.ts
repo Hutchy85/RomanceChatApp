@@ -1,5 +1,7 @@
+import Config from 'react-native-config';
+
 const BASE_URL = 'https://api.venice.ai/api/v1';
-const API_KEY = 'Bearer HGXiK6Pvez5EY3lRR91HLdkjkeEEHUojp4Q0EA9vUT';
+const API_KEY: string = Config.API_KEY ?? '';
 
 export const getChatbotReply = async (
   history: { role: string; content: string }[],
@@ -13,7 +15,7 @@ export const getChatbotReply = async (
       headers: {
         'Authorization': API_KEY,
         'Content-Type': 'application/json',
-      },
+      } as HeadersInit,
       body: JSON.stringify(body),
     });
 
