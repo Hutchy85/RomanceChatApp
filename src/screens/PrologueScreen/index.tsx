@@ -11,7 +11,7 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
-import { stories } from '../../data/stories';
+import { stories } from '../../data/stories/index';
 
 type PrologueScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Prologue'>;

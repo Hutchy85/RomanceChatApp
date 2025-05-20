@@ -4,7 +4,7 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation';
-import { stories } from '../../data/stories';
+import { stories } from '../../data/stories/index';
 
 type StorySceneRouteProp = RouteProp<RootStackParamList, 'StoryScene'>;
 type StorySceneNavigationProp = StackNavigationProp<RootStackParamList, 'StoryScene'>;

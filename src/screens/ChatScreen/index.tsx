@@ -9,7 +9,8 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { getChatbotReply } from '../../api/apiClient';
 import { Message } from '../../types/index';
-import { stories, Scene, ImageTrigger, SceneTrigger } from '../../data/stories';
+import { stories } from '../../data/stories/index';
+import { Scene, ImageTrigger, SceneTrigger } from '../../types/index';
 import { saveSession, loadSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 

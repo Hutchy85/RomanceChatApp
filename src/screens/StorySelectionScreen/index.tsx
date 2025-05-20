@@ -11,7 +11,8 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { stories, Story } from '../../data/stories';
+import { stories } from '../../data/stories/index';
+import { Story } from '../../types/index';
 import { clearSession, clearLastOpenedSession } from '../../data/sessionstorage';
 import { hasSavedSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
