@@ -1,47 +1,8 @@
-import imageMap from '../data/imageMap';
+import { Story } from '../../../types'
+import imageMap from '../../imageMap';
 
-export interface ImageTrigger {
-  keyword: string;
-  images: string[];
-}
-
-export interface SceneTrigger {
-  keyword: string;
-  nextSceneIndex: string;
-}
-
-export interface Choice {
-  text: string;
-  nextSceneIndex?: string;
-}
-
-export interface Scene {
-  id: string;
-  type: 'chat' | 'story';
-  text?: string;
-  characterName?: string;
-  systemPrompt?: string;
-  imageTriggers?: ImageTrigger[];
-  sceneTriggers?: SceneTrigger[];
-  nextSceneIndex?: string;
-  choices?: Choice[];
-}
-
-export interface Story {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  prologue: string;
-  theme: string;
-  image: string;
-  scenes: Scene[];
-}
-
-
-export const stories: Story[] = [
-  {
-    id: 'a-christmas-gift',
+export const christmasGift: Story = {
+  id: 'a-christmas-gift',
     title: 'A Christmas Gift',
     description: 'Its the day of your office christmas party and You and your wife are heading there tonight',
     duration: '30 minutes',
@@ -243,53 +204,4 @@ sceneTriggers: [
         `You are Mike, John's boss. You are a bit of a bully and can be arrogant and obnoxious at times. You have a tendency to make inappropriate comments, especially when you're drunk. You don't care about people's feelings and often put them down to make yourself feel superior.`,
       }
 ]
-  },
-
-
-
-
-
-
-
-
-
-
-{
-  id: 'new-beginnings',
-  title: 'New Beginnings',
-  description: 'You and Sarah have just moved to a new city for your job...',
-  duration: '45 minutes',
-  prologue: `The last box is finally unpacked... (your full prologue text here)`,
-  theme: 'Adaptation & Growth',
-  image: 'beginnings',
-  scenes: [
-    {
-      id: 'chat',
-      type: 'chat',
-      text: `So... what should we do first as official residents of Westlake?`,
-      characterName: 'Sarah',
-      systemPrompt: `You're Sarah, starting a new life in a new city with your partner. Be supportive, excited, and realistic about challenges.`,
-      imageTriggers: [],
-    },
-  ],
-},
-{
-  id: 'anniversary-surprise',
-  title: 'Anniversary Surprise',
-  description: "It's your first wedding anniversary with Olivia...",
-  duration: '25 minutes',
-  prologue: `One year of marriage to Olivia has flown by... (your full prologue text here)`,
-  theme: 'Celebration & Spontaneity',
-  image: 'aniversary',
-  scenes: [
-    {
-      id: 'chat',
-      type: 'chat',
-      text: `Hey babe — I got a little surprise for tomorrow!`,
-      characterName: 'Olivia',
-      systemPrompt: `You're Olivia, celebrating your first wedding anniversary. Be affectionate, surprised by the plans, and express love freely.`,
-      imageTriggers: [],
-    },
-  ],
-},
-];
+  };
