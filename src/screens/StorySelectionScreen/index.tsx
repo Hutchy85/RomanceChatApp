@@ -29,10 +29,12 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
       await clearSession(storyId);
       await clearLastOpenedSession();
       await AsyncStorage.setItem('lastOpenedSession', storyId);
-      navigation.navigate('Prologue', { storyId });
+      
+      // Navigate to StoryScene with isPrologue flag instead of dedicated Prologue screen
+      navigation.navigate('StoryScene', { storyId, isPrologue: true });
     } catch (error) {
       console.error('Error starting new story:', error);
-      navigation.navigate('Prologue', { storyId });
+      navigation.navigate('StoryScene', { storyId, isPrologue: true });
     }
   };
 
@@ -41,7 +43,6 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     if (exists) {
       await AsyncStorage.setItem('lastOpenedSession', storyId);
       navigation.navigate('Chat', { storyId, sceneId: 'chat', startNewSession: false });
-
     } else {
       Alert.alert('No saved session', 'There is no saved session for this story.');
     }
@@ -54,7 +55,7 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     return (
       <View style={styles.storyCard}>
         <Image 
-          source={imageSource} // Directly use the image from story data
+          source={imageSource}
           style={styles.storyImage}
           resizeMode="cover"
         />
