@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, Image
@@ -10,7 +10,7 @@ import { RootStackParamList } from '../../navigation';
 import { getChatbotReply } from '../../api/apiClient';
 import { Message } from '../../types/index';
 import { stories } from '../../data/stories/index';
-import { Scene, ImageTrigger, SceneTrigger } from '../../types/index';
+import { Scene } from '../../types/index';
 import { saveSession, loadSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 
@@ -18,6 +18,45 @@ type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
   route: RouteProp<RootStackParamList, 'Chat'>;
 };
+
+// Memoized message item component for better list performance
+const MessageItem = memo(({ item }: { item: Message }) => (
+  <View style={[
+    styles.messageWrapper,
+    item.type === 'user' ? styles.userMessageWrapper : styles.assistantMessageWrapper
+  ]}>
+    {item.type !== 'system' && (
+      <Image source={item.avatar} style={styles.avatar} />
+    )}
+    <View style={[
+      styles.messageContainer,
+      item.type === 'user' ? styles.userMessage :
+      item.type === 'assistant' ? styles.assistantMessage :
+      styles.systemMessage
+    ]}>
+      {item.type !== 'system' && (
+        <Text style={styles.senderName}>{item.name}</Text>
+      )}
+      {item.image ? (
+        <Image
+          source={item.image}
+          style={styles.chatImage}
+          resizeMode="cover"
+        />
+      ) : (
+        <Text style={[
+          styles.messageText,
+          item.type === 'system' && styles.systemMessageText
+        ]}>
+          {item.text}
+        </Text>
+      )}
+      {item.type !== 'system' && !item.image && (
+        <Text style={styles.timestampText}>{item.timestamp}</Text>
+      )}
+    </View>
+  </View>
+));
 
 const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const { storyId, sceneId, startNewSession } = route.params;
@@ -49,7 +88,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     }
   }, [storyId, sceneId, startNewSession]);
 
-  const loadExistingSession = async (systemPrompt: string) => {
+  const loadExistingSession = useCallback(async (systemPrompt: string) => {
     try {
       const savedMessages = await loadSession(storyId);
       if (savedMessages && savedMessages.length > 0) {
@@ -73,7 +112,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     } catch (error) {
       console.error('Error loading session:', error);
     }
-  };
+  }, [storyId]);
 
   // Memoized message creation function to prevent recreating on each render
   const createMessage = useCallback((text: string, type: Message['type'], imageUrl?: number): Message => {
@@ -88,36 +127,33 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     };
   }, [currentScene]);
 
-  const addMessage = useCallback((text: string, type: Message['type']) => {
-    const newMessage = createMessage(text, type);
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-    
-    scrollToEnd();
-  }, [createMessage]);
-
-  const addImageMessage = useCallback((imageUrl: number, type: Message['type']) => {
-    const newMessage = createMessage('', type, imageUrl);
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-    
-    scrollToEnd();
-  }, [createMessage]);
-
-  const scrollToEnd = () => {
-    setTimeout(() => {
+  const scrollToEnd = useCallback(() => {
+    // Use requestAnimationFrame for smoother scrolling
+    requestAnimationFrame(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
+    });
+  }, []);
 
   const checkTriggers = useCallback((aiReply: string) => {
     if (!currentScene) return;
     
     // Check for image triggers
     const imageTriggers = currentScene.imageTriggers || [];
+    const newMessages: Message[] = [];
+    
     imageTriggers.forEach(trigger => {
       if (aiReply.toLowerCase().includes(trigger.keyword.toLowerCase())) {
-        trigger.images.forEach(image => addImageMessage(Number(image), 'assistant'));
+        trigger.images.forEach(image => {
+          newMessages.push(createMessage('', 'assistant', Number(image)));
+        });
       }
     });
+    
+    // If we have image messages to add, do it in a single state update
+    if (newMessages.length > 0) {
+      setMessages(prevMessages => [...prevMessages, ...newMessages]);
+      scrollToEnd();
+    }
     
     // Check for scene triggers
     const sceneTriggers = currentScene.sceneTriggers || [];
@@ -126,77 +162,95 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         navigation.navigate('StoryScene', { storyId, sceneId: trigger.nextSceneIndex });
       }
     });
-  }, [currentScene, storyId, navigation, addImageMessage]);
+  }, [currentScene, storyId, navigation, createMessage, scrollToEnd]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!inputText.trim() || isSending) return;
 
     const userMessage = inputText.trim();
-    addMessage(userMessage, 'user');
-    chatHistory.current.push({ role: 'user', content: userMessage });
+    const userMessageObj = createMessage(userMessage, 'user');
+    
+    // Batch these state updates
+    setMessages(prevMessages => [...prevMessages, userMessageObj]);
     setInputText('');
     setIsSending(true);
 
+    // Update chat history
+    chatHistory.current.push({ role: 'user', content: userMessage });
+    
+    scrollToEnd();
+
     try {
       const aiReply = await getChatbotReply(chatHistory.current);
+      const aiMessageObj = createMessage(aiReply, 'assistant');
+      
+      // Update chat history
       chatHistory.current.push({ role: 'assistant', content: aiReply });
-      addMessage(aiReply, 'assistant');
       
-      // Check for triggers in the AI's reply
+      // Update UI state and save session in one update
+      setMessages(prevMessages => {
+        const updatedMessages = [...prevMessages, aiMessageObj];
+        // Save in background to avoid blocking UI
+        saveSession(storyId, updatedMessages).catch(err => 
+          console.error('Error saving session:', err)
+        );
+        return updatedMessages;
+      });
+      
+      // Check for triggers after state update
       checkTriggers(aiReply);
-      
-      // Auto-save after each message exchange
-      const updatedMessages = [...messages, 
-        createMessage(userMessage, 'user'),
-        createMessage(aiReply, 'assistant')
-      ];
-      await saveSession(storyId, updatedMessages);
       
     } catch (error) {
       console.error('Error getting chatbot reply:', error);
-      addMessage('Sorry, something went wrong. Please try again.', 'system');
+      setMessages(prevMessages => [
+        ...prevMessages,
+        createMessage('Sorry, something went wrong. Please try again.', 'system')
+      ]);
     } finally {
       setIsSending(false);
+      scrollToEnd();
     }
-  };
+  }, [inputText, isSending, createMessage, storyId, checkTriggers, scrollToEnd]);
 
-  const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={[
-      styles.messageWrapper,
-      item.type === 'user' ? styles.userMessageWrapper : styles.assistantMessageWrapper
-    ]}>
-      {item.type !== 'system' && (
-        <Image source={item.avatar} style={styles.avatar} />
-      )}
-      <View style={[
-        styles.messageContainer,
-        item.type === 'user' ? styles.userMessage :
-        item.type === 'assistant' ? styles.assistantMessage :
-        styles.systemMessage
-      ]}>
-        {item.type !== 'system' && (
-          <Text style={styles.senderName}>{item.name}</Text>
-        )}
-        {item.image ? (
-          <Image
-            source={item.image}
-            style={styles.chatImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <Text style={[
-            styles.messageText,
-            item.type === 'system' && styles.systemMessageText
-          ]}>
-            {item.text}
-          </Text>
-        )}
-        {item.type !== 'system' && !item.image && (
-          <Text style={styles.timestampText}>{item.timestamp}</Text>
-        )}
-      </View>
-    </View>
-  );
+  const saveProgress = useCallback(() => {
+    saveSession(storyId, messages)
+      .then(() => {
+        // Optional: Add feedback that save was successful
+        setMessages(prevMessages => [
+          ...prevMessages,
+          createMessage('Progress saved successfully!', 'system')
+        ]);
+        setTimeout(() => {
+          setMessages(prevMessages => 
+            prevMessages.filter(msg => msg.text !== 'Progress saved successfully!')
+          );
+        }, 3000);
+      })
+      .catch(error => {
+        console.error('Error saving session:', error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          createMessage('Failed to save progress. Please try again.', 'system')
+        ]);
+      });
+  }, [storyId, messages, createMessage]);
+
+  const goToNextScene = useCallback(() => {
+    if (!currentScene || !currentScene.sceneTriggers || currentScene.sceneTriggers.length === 0) return;
+    
+    const nextSceneId = currentScene.sceneTriggers[0].nextSceneIndex;
+    if (nextSceneId) {
+      navigation.navigate('StoryScene', { storyId, sceneId: nextSceneId });
+    }
+  }, [currentScene, navigation, storyId]);
+
+  // Key extractor optimization - don't recreate on every render
+  const keyExtractor = useCallback((item: Message) => item.id, []);
+
+  // Optimized render function with proper memoization
+  const renderItem = useCallback(({ item }: { item: Message }) => (
+    <MessageItem item={item} />
+  ), []);
 
   if (!selectedStory || !currentScene) {
     return (
@@ -213,82 +267,83 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   }
 
   return (
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-  >
-    <SafeAreaView style={styles.container}>
-  
-    <FlatList
-      ref={flatListRef}
-      data={messages}
-      renderItem={renderMessageItem}
-      keyExtractor={item => item.id}
-      contentContainerStyle={styles.messagesContent}
-      initialNumToRender={10}
-      maxToRenderPerBatch={10}
-      windowSize={10}
-      keyboardShouldPersistTaps="handled"
-    />
-
-    <View style={styles.footerContainer}>
-    {isSending && (
-        <View style={styles.typingContainer}>
-          <ActivityIndicator size="small" color="#4ecdc4" />
-          <Text style={styles.typingText}>Typing...</Text>
-        </View>
-      )}
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Type your message..."
-          multiline
-          maxLength={500}
-          returnKeyType="send"
-          onSubmitEditing={handleSendMessage}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.messagesContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          keyboardShouldPersistTaps="handled"
+          // Add pull-to-refresh if needed
+          // Performance optimizations
+          removeClippedSubviews={true}
+          getItemLayout={(data, index) => ({
+            length: 85, // Approximate height of a message item
+            offset: 85 * index,
+            index,
+          })}
         />
-        <TouchableOpacity
-          style={[
-            styles.sendButton,
-            (!inputText.trim() || isSending) && styles.sendButtonDisabled,
-          ]}
-          onPress={handleSendMessage}
-          disabled={!inputText.trim() || isSending}
-        >
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-      
-      </View>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={() => saveSession(storyId, messages)}
-        >
-          <Text style={styles.saveButtonText}>Save Progress</Text>
-        </TouchableOpacity>
 
-        {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
-          <TouchableOpacity
-            style={styles.nextButton}
-            onPress={() => {
-              const nextSceneId = currentScene.sceneTriggers?.[0]?.nextSceneIndex;
-              if (nextSceneId) {
-                navigation.navigate('StoryScene', { storyId, sceneId: nextSceneId });
-              }
-            }}
-          >
-            <Text style={styles.nextButtonText}>Go to Next Scene</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-    </SafeAreaView>
-  </KeyboardAvoidingView>
+        <View style={styles.footerContainer}>
+          {isSending && (
+            <View style={styles.typingContainer}>
+              <ActivityIndicator size="small" color="#4ecdc4" />
+              <Text style={styles.typingText}>Typing...</Text>
+            </View>
+          )}
 
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder="Type your message..."
+              multiline
+              maxLength={500}
+              returnKeyType="send"
+              onSubmitEditing={handleSendMessage}
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                (!inputText.trim() || isSending) && styles.sendButtonDisabled,
+              ]}
+              onPress={handleSendMessage}
+              disabled={!inputText.trim() || isSending}
+            >
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={saveProgress}
+            >
+              <Text style={styles.saveButtonText}>Save Progress</Text>
+            </TouchableOpacity>
+
+            {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
+              <TouchableOpacity
+                style={styles.nextButton}
+                onPress={goToNextScene}
+              >
+                <Text style={styles.nextButtonText}>Go to Next Scene</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -298,7 +353,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     paddingBottom: 30, 
   },
-
   errorText: {
     fontSize: 18,
     color: '#ff3b30',
@@ -457,12 +511,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   footerContainer: {
-  borderTopWidth: 1,
-  borderTopColor: '#eaeaea',
-  backgroundColor: '#fff',
-  padding: 10,
-  flexShrink: 0,
-},
+    borderTopWidth: 1,
+    borderTopColor: '#eaeaea',
+    backgroundColor: '#fff',
+    padding: 10,
+    flexShrink: 0,
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -470,4 +524,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatScreen;
+export default memo(ChatScreen);
