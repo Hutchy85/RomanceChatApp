@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity,
+  View, Text, FlatList, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, Image
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,9 +10,10 @@ import { RootStackParamList } from '../../navigation';
 import { getChatbotReply } from '../../api/apiClient';
 import { Message } from '../../types/index';
 import { stories } from '../../data/stories/index';
-import { Scene, ImageTrigger, SceneTrigger } from '../../types/index';
+import { Scene } from '../../types/index';
 import { saveSession, loadSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
+import { colors, commonStyles } from '../../styles'; // Import shared styles
 
 type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
@@ -162,37 +163,37 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
   const renderMessageItem = ({ item }: { item: Message }) => (
     <View style={[
-      styles.messageWrapper,
-      item.type === 'user' ? styles.userMessageWrapper : styles.assistantMessageWrapper
+      commonStyles.messageWrapper,
+      item.type === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
     ]}>
       {item.type !== 'system' && (
-        <Image source={item.avatar} style={styles.avatar} />
+        <Image source={item.avatar} style={commonStyles.avatar} />
       )}
       <View style={[
-        styles.messageContainer,
-        item.type === 'user' ? styles.userMessage :
-        item.type === 'assistant' ? styles.assistantMessage :
-        styles.systemMessage
+        commonStyles.messageContainer,
+        item.type === 'user' ? commonStyles.userMessage :
+        item.type === 'assistant' ? commonStyles.assistantMessage :
+        commonStyles.systemMessage
       ]}>
         {item.type !== 'system' && (
-          <Text style={styles.senderName}>{item.name}</Text>
+          <Text style={commonStyles.senderName}>{item.name}</Text>
         )}
         {item.image ? (
           <Image
             source={item.image}
-            style={styles.chatImage}
+            style={commonStyles.chatImage}
             resizeMode="cover"
           />
         ) : (
           <Text style={[
-            styles.messageText,
-            item.type === 'system' && styles.systemMessageText
+            commonStyles.messageText,
+            item.type === 'system' && commonStyles.systemMessageText
           ]}>
             {item.text}
           </Text>
         )}
         {item.type !== 'system' && !item.image && (
-          <Text style={styles.timestampText}>{item.timestamp}</Text>
+          <Text style={commonStyles.timestampText}>{item.timestamp}</Text>
         )}
       </View>
     </View>
@@ -200,13 +201,13 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
   if (!selectedStory || !currentScene) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Story or scene not found.</Text>
+      <SafeAreaView style={commonStyles.container}>
+        <Text style={commonStyles.errorText}>Story or scene not found.</Text>
         <TouchableOpacity 
-          style={styles.buttonPrimary}
+          style={commonStyles.buttonPrimary}
           onPress={() => navigation.navigate('StorySelection')}
         >
-          <Text style={styles.buttonText}>Return to Stories</Text>
+          <Text style={commonStyles.buttonText}>Return to Stories</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -218,31 +219,31 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
   >
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={commonStyles.safeAreaContainer}>
   
     <FlatList
       ref={flatListRef}
       data={messages}
       renderItem={renderMessageItem}
       keyExtractor={item => item.id}
-      contentContainerStyle={styles.messagesContent}
+      contentContainerStyle={commonStyles.messagesContent}
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={10}
       keyboardShouldPersistTaps="handled"
     />
 
-    <View style={styles.footerContainer}>
+    <View style={commonStyles.footerContainer}>
     {isSending && (
-        <View style={styles.typingContainer}>
-          <ActivityIndicator size="small" color="#4ecdc4" />
-          <Text style={styles.typingText}>Typing...</Text>
+        <View style={commonStyles.typingContainer}>
+          <ActivityIndicator size="small" color={colors.secondary} />
+          <Text style={commonStyles.typingText}>Typing...</Text>
         </View>
       )}
 
-      <View style={styles.inputContainer}>
+      <View style={commonStyles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={commonStyles.input}
           value={inputText}
           onChangeText={setInputText}
           placeholder="Type your message..."
@@ -253,27 +254,27 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         />
         <TouchableOpacity
           style={[
-            styles.sendButton,
-            (!inputText.trim() || isSending) && styles.sendButtonDisabled,
+            commonStyles.buttonPrimary,
+            (!inputText.trim() || isSending) && commonStyles.buttonDisabled,
           ]}
           onPress={handleSendMessage}
           disabled={!inputText.trim() || isSending}
         >
-          <Text style={styles.sendButtonText}>Send</Text>
+          <Text style={commonStyles.buttonText}>Send</Text>
         </TouchableOpacity>
       
       </View>
-      <View style={styles.buttonRow}>
+      <View style={commonStyles.buttonRow}>
         <TouchableOpacity
-          style={styles.saveButton}
+          style={commonStyles.buttonSecondary}
           onPress={() => saveSession(storyId, messages)}
         >
-          <Text style={styles.saveButtonText}>Save Progress</Text>
+          <Text style={commonStyles.buttonText}>Save Progress</Text>
         </TouchableOpacity>
 
         {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
           <TouchableOpacity
-            style={styles.nextButton}
+            style={commonStyles.buttonTertiary}
             onPress={() => {
               const nextSceneId = currentScene.sceneTriggers?.[0]?.nextSceneIndex;
               if (nextSceneId) {
@@ -281,7 +282,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
               }
             }}
           >
-            <Text style={styles.nextButtonText}>Go to Next Scene</Text>
+            <Text style={commonStyles.buttonText}>Go to Next Scene</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -291,183 +292,5 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
   );
 };
-
-const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f9f9f9',
-    paddingBottom: 30, 
-  },
-
-  errorText: {
-    fontSize: 18,
-    color: '#ff3b30',
-    textAlign: 'center',
-    margin: 20,
-  },
-  buttonPrimary: {
-    backgroundColor: '#ff6b6b',
-    padding: 12,
-    margin: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  messageContainer: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  userMessage: { 
-    alignSelf: 'flex-end', 
-    backgroundColor: '#ff6b6b', 
-    borderBottomRightRadius: 0 
-  },
-  assistantMessage: { 
-    alignSelf: 'flex-start', 
-    backgroundColor: '#4ecdc4', 
-    borderBottomLeftRadius: 0 
-  },
-  systemMessage: { 
-    alignSelf: 'center', 
-    backgroundColor: '#f0f0f0', 
-    maxWidth: '90%' 
-  },
-  messageText: { 
-    fontSize: 16, 
-    color: '#fff' 
-  },
-  systemMessageText: { 
-    color: '#777', 
-    fontStyle: 'italic' 
-  },
-  timestampText: { 
-    fontSize: 12, 
-    color: 'rgba(255, 255, 255, 0.7)', 
-    alignSelf: 'flex-end', 
-    marginTop: 5 
-  },
-  chatImage: {
-    width: 200,
-    height: 300,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  typingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 10,
-    marginLeft: 15,
-    marginBottom: 10,
-  },
-  messageWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 10,
-  },
-  userMessageWrapper: {
-    flexDirection: 'row-reverse',
-  },
-  assistantMessageWrapper: {
-    flexDirection: 'row',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginHorizontal: 8,
-  },
-  senderName: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  typingText: { 
-    marginLeft: 5, 
-    color: '#777' 
-  },
-  inputContainer: { 
-    flexDirection: 'row', 
-    padding: 10, 
-    backgroundColor: '#fff', 
-    borderTopWidth: 1, 
-    borderTopColor: '#eaeaea' 
-  },
-  input: { 
-    flex: 1, 
-    backgroundColor: '#f0f0f0', 
-    borderRadius: 20, 
-    paddingHorizontal: 15, 
-    paddingVertical: 10, 
-    maxHeight: 100 
-  },
-  sendButton: { 
-    backgroundColor: '#ff6b6b', 
-    borderRadius: 20, 
-    paddingHorizontal: 20, 
-    paddingVertical: 10, 
-    marginLeft: 10, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
-  },
-  sendButtonDisabled: { 
-    backgroundColor: '#ccc' 
-  },
-  sendButtonText: { 
-    color: '#fff', 
-    fontWeight: 'bold' 
-  },
-  messagesContent: { 
-    padding: 15, 
-    paddingBottom: 10 
-  },
-  saveButton: {
-    backgroundColor: '#4ecdc4',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 5,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  nextButton: {
-    backgroundColor: '#ffa502',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-    marginLeft: 5,
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footerContainer: {
-  borderTopWidth: 1,
-  borderTopColor: '#eaeaea',
-  backgroundColor: '#fff',
-  padding: 10,
-  flexShrink: 0,
-},
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-  },
-});
 
 export default ChatScreen;

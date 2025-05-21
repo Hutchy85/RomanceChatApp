@@ -3,7 +3,7 @@ const API_KEY = 'Bearer HGXiK6Pvez5EY3lRR91HLdkjkeEEHUojp4Q0EA9vUT';
 
 export const getChatbotReply = async (
   history: { role: string; content: string }[],
-  model = 'llama-3.2-3b'
+  model = 'dolphin-2.9.2-qwen2-72b'
 ): Promise<string> => {
   const body = { model, messages: history };
 
