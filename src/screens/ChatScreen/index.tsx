@@ -7,13 +7,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
-import { getChatbotReply } from '../../api/apiClient';
+// import { getChatbotReply } from '../../api/apiClient'; // Replaced by useChatApi
 import { Message } from '../../types/index';
 import { stories } from '../../data/stories/index';
 import { Scene } from '../../types/index';
-import { saveSession, loadSession } from '../../data/sessionstorage';
-import imageMap from '../../data/imageMap';
-import { colors, commonStyles } from '../../styles'; // Import shared styles
+import imageMap from '../../data/imageMap'; 
+import { colors, commonStyles } from '../../styles'; 
+import { useChatMessages } from './hooks/useChatMessages';
+import { useChatSession } from './hooks/useChatSession';
+import { useChatApi } from './hooks/useChatApi';
 
 type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
@@ -23,15 +25,17 @@ type ChatScreenProps = {
 const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const { storyId, sceneId, startNewSession } = route.params;
   
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  // const [isSending, setIsSending] = useState(false); // Moved to useChatApi
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   
   const flatListRef = useRef<FlatList>(null);
-  const chatHistory = useRef<{ role: string; content: string }[]>([]);
-  
   const selectedStory = stories.find(story => story.id === storyId);
+
+  const { messages, addMessage, addImageMessage, setMessages: setHookMessages } = useChatMessages(flatListRef);
+  const { chatHistory, loadSession, saveSession, initializeChatHistory, updateChatHistory } = useChatSession(storyId, setHookMessages);
+  const { isSending, fetchBotReply } = useChatApi();
+
 
   // Find the current scene and set up system prompt on mount
   useEffect(() => {
@@ -42,85 +46,26 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     
     setCurrentScene(scene);
     const systemPrompt = scene.systemPrompt || 'You are a helpful assistant.';
-    chatHistory.current = [{ role: 'system', content: systemPrompt }];
     
-    // Load existing session if needed
     if (!startNewSession) {
-      loadExistingSession(systemPrompt);
+      loadSession(systemPrompt);
+    } else {
+      initializeChatHistory(systemPrompt);
+      setHookMessages([]); 
     }
-  }, [storyId, sceneId, startNewSession]);
+  }, [storyId, sceneId, startNewSession, selectedStory, loadSession, initializeChatHistory, setHookMessages]);
 
-  const loadExistingSession = async (systemPrompt: string) => {
-    try {
-      const savedMessages = await loadSession(storyId);
-      if (savedMessages && savedMessages.length > 0) {
-        setMessages(savedMessages);
-        
-        // Rebuild chat history from saved messages
-        const rebuiltHistory = savedMessages
-          .filter(msg => msg.type !== 'system')
-          .map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.text || '',
-          }));
-          
-        chatHistory.current = [
-          { role: 'system', content: systemPrompt },
-          ...rebuiltHistory,
-        ];
-        
-        console.log('Loaded existing session with', savedMessages.length, 'messages');
-      }
-    } catch (error) {
-      console.error('Error loading session:', error);
-    }
-  };
-
-  // Memoized message creation function to prevent recreating on each render
-  const createMessage = useCallback((text: string, type: Message['type'], imageUrl?: number): Message => {
-    return {
-      id: Date.now().toString(),
-      text: imageUrl ? undefined : text,
-      image: imageUrl,
-      type,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      name: type === 'user' ? 'You' : currentScene?.characterName,
-      avatar: type === 'user' ? imageMap.userAvatar : imageMap.assistantAvatar,
-    };
-  }, [currentScene]);
-
-  const addMessage = useCallback((text: string, type: Message['type']) => {
-    const newMessage = createMessage(text, type);
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-    
-    scrollToEnd();
-  }, [createMessage]);
-
-  const addImageMessage = useCallback((imageUrl: number, type: Message['type']) => {
-    const newMessage = createMessage('', type, imageUrl);
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-    
-    scrollToEnd();
-  }, [createMessage]);
-
-  const scrollToEnd = () => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
 
   const checkTriggers = useCallback((aiReply: string) => {
     if (!currentScene) return;
     
-    // Check for image triggers
     const imageTriggers = currentScene.imageTriggers || [];
     imageTriggers.forEach(trigger => {
       if (aiReply.toLowerCase().includes(trigger.keyword.toLowerCase())) {
-        trigger.images.forEach(image => addImageMessage(Number(image), 'assistant'));
+        trigger.images.forEach(imageKey => addImageMessage(String(imageMap[imageKey] || imageKey), 'ai', currentScene));
       }
     });
     
-    // Check for scene triggers
     const sceneTriggers = currentScene.sceneTriggers || [];
     sceneTriggers.forEach(trigger => {
       if (aiReply.toLowerCase().includes(trigger.keyword.toLowerCase())) {
@@ -130,70 +75,68 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   }, [currentScene, storyId, navigation, addImageMessage]);
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isSending) return;
+    if (!inputText.trim() || isSending || !currentScene) return;
 
-    const userMessage = inputText.trim();
-    addMessage(userMessage, 'user');
-    chatHistory.current.push({ role: 'user', content: userMessage });
+    const userMessageText = inputText.trim(); // Renamed from userMessage to userMessageText for clarity
+    const userMessageObject = addMessage(userMessageText, 'user', currentScene);
+    updateChatHistory(userMessageObject); 
+    
     setInputText('');
-    setIsSending(true);
+    // setIsSending(true); // Handled by useChatApi
 
     try {
-      const aiReply = await getChatbotReply(chatHistory.current);
-      chatHistory.current.push({ role: 'assistant', content: aiReply });
-      addMessage(aiReply, 'assistant');
+      const aiReplyText = await fetchBotReply(chatHistory.current);
       
-      // Check for triggers in the AI's reply
-      checkTriggers(aiReply);
+      // Note: addMessage returns the message object, which is useful for updateChatHistory
+      const aiMessageObject = addMessage(aiReplyText, 'ai', currentScene);
+      updateChatHistory(aiMessageObject); 
       
-      // Auto-save after each message exchange
-      const updatedMessages = [...messages, 
-        createMessage(userMessage, 'user'),
-        createMessage(aiReply, 'assistant')
-      ];
-      await saveSession(storyId, updatedMessages);
+      checkTriggers(aiReplyText);
+      
+      // It's important that 'messages' here reflects the state *after* both user and AI messages are added.
+      // addMessage updates the 'messages' state in useChatMessages hook.
+      // By the time saveSession is called, 'messages' should be up-to-date.
+      saveSession(messages); 
       
     } catch (error) {
-      console.error('Error getting chatbot reply:', error);
-      addMessage('Sorry, something went wrong. Please try again.', 'system');
-    } finally {
-      setIsSending(false);
-    }
+      // Error is already logged by useChatApi
+      // Add error message to UI.
+      const errMessageObject = addMessage('Sorry, something went wrong. Please try again.', 'ai', currentScene);
+      // Optionally, add this system-like error to chat history for context, though it's an AI placeholder
+      updateChatHistory(errMessageObject);
+    } 
+    // finally { setIsSending(false); } // Handled by useChatApi
   };
 
   const renderMessageItem = ({ item }: { item: Message }) => (
     <View style={[
       commonStyles.messageWrapper,
-      item.type === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
+      item.sender === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
     ]}>
-      {item.type !== 'system' && (
-        <Image source={item.avatar} style={commonStyles.avatar} />
-      )}
+      {/* Assuming system messages won't have avatar/name and are not typical here */}
+      <Image source={item.avatar} style={commonStyles.avatar} />
       <View style={[
         commonStyles.messageContainer,
-        item.type === 'user' ? commonStyles.userMessage :
-        item.type === 'assistant' ? commonStyles.assistantMessage :
-        commonStyles.systemMessage
+        item.sender === 'user' ? commonStyles.userMessage : commonStyles.assistantMessage
+        // System messages styling would need a condition if they are rendered through this
       ]}>
-        {item.type !== 'system' && (
-          <Text style={commonStyles.senderName}>{item.name}</Text>
-        )}
-        {item.image ? (
+        <Text style={commonStyles.senderName}>{item.name}</Text>
+        {item.imageUrl ? ( // Changed from item.image to item.imageUrl
           <Image
-            source={item.image}
+            source={{uri: item.imageUrl}} // Assuming imageUrl is a URI
             style={commonStyles.chatImage}
             resizeMode="cover"
           />
         ) : (
-          <Text style={[
-            commonStyles.messageText,
-            item.type === 'system' && commonStyles.systemMessageText
-          ]}>
+          <Text style={commonStyles.messageText}>
             {item.text}
           </Text>
         )}
-        {item.type !== 'system' && !item.image && (
-          <Text style={commonStyles.timestampText}>{item.timestamp}</Text>
+        {/* Timestamp display based on ISO string, can be formatted if needed */}
+        {!item.imageUrl && (
+            <Text style={commonStyles.timestampText}>
+              {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
         )}
       </View>
     </View>
@@ -215,7 +158,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
   return (
   <KeyboardAvoidingView
-    style={{ flex: 1 }}
+    style={commonStyles.keyboardAvoidingView} // Use commonStyles
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
   >
@@ -223,7 +166,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   
     <FlatList
       ref={flatListRef}
-      data={messages}
+      data={messages} // From useChatMessages
       renderItem={renderMessageItem}
       keyExtractor={item => item.id}
       contentContainerStyle={commonStyles.messagesContent}
@@ -267,7 +210,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
       <View style={commonStyles.buttonRow}>
         <TouchableOpacity
           style={commonStyles.buttonSecondary}
-          onPress={() => saveSession(storyId, messages)}
+          onPress={() => saveSession(messages)} // messages from useChatMessages
         >
           <Text style={commonStyles.buttonText}>Save Progress</Text>
         </TouchableOpacity>

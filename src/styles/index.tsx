@@ -78,6 +78,9 @@ export const commonStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  flexOne: {
+    flex: 1,
+  },
   fullWidthContainer: {
     width: '100%',
   },
@@ -314,6 +317,9 @@ export const commonStyles = StyleSheet.create({
     padding: spacing.md,
     flexShrink: 0,
   },
+  keyboardAvoidingView: { // Added for consistency
+    flex: 1,
+  },
   
   // List and item styles
   listContainer: {
@@ -355,5 +361,14 @@ export const commonStyles = StyleSheet.create({
   storyMetaText: {
     fontSize: fontSizes.small,
     color: colors.darkGray,
+  },
+
+  // Navigation styles
+  navigationHeader: {
+    backgroundColor: colors.primary,
+  },
+  navigationHeaderTitle: {
+    fontWeight: 'bold',
+    // color: colors.textLight, // headerTintColor will handle this
   },
 });
