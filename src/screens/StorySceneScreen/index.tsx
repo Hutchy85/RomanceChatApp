@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation';
 import { stories } from '../../data/stories/index';
+import { commonStyles } from '../../styles';
 
 type StorySceneRouteProp = RouteProp<RootStackParamList, 'StoryScene'>;
 type StorySceneNavigationProp = StackNavigationProp<RootStackParamList, 'StoryScene'>;
@@ -24,8 +25,10 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (!story) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Story not found</Text>
+      <SafeAreaView style={commonStyles.safeAreaContainer}>
+        <View style={commonStyles.container}>
+          <Text style={commonStyles.errorText}>Story not found</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -35,21 +38,21 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
     const prologueContent = story.prologue;
     
     return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={styles.title}>{story.title}</Text>
-          
-          <View style={styles.prologueCard}>
-            {prologueContent.split('\n\n').map((paragraph, index) => (
-              <Text key={index} style={styles.prologueText}>
-                {paragraph}
-              </Text>
-            ))}
-          </View>
-          
-          <View style={styles.buttonContainer}>
+      <SafeAreaView style={commonStyles.safeAreaContainer}>
+        <ScrollView contentContainerStyle={commonStyles.scrollContent}>
+          <View style={commonStyles.container}>
+            <Text style={commonStyles.coloredTitle}>{story.title}</Text>
+            
+            <View style={commonStyles.card}>
+              {prologueContent.split('\n\n').map((paragraph, index) => (
+                <Text key={index} style={commonStyles.paragraph}>
+                  {paragraph}
+                </Text>
+              ))}
+            </View>
+            
             <TouchableOpacity 
-              style={styles.continueButton}
+              style={commonStyles.buttonPrimary}
               onPress={() => {
                 // Find the first scene (typically chat scene)
                 const firstSceneId = story.scenes[0].id;
@@ -60,14 +63,14 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
                 });
               }}
             >
-              <Text style={styles.continueButtonText}>Begin Story</Text>
+              <Text style={commonStyles.buttonText}>Begin Story</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={styles.backButton}
+              style={commonStyles.buttonOutline}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.backButtonText}>Back to Stories</Text>
+              <Text style={commonStyles.buttonTextOutline}>Back to Stories</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -78,24 +81,27 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   // For regular scene view (original functionality)
   if (!scene) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Scene not found.</Text>
+      <SafeAreaView style={commonStyles.safeAreaContainer}>
+        <View style={commonStyles.container}>
+          <Text style={commonStyles.errorText}>Scene not found.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>{story.title}</Text>
-        <Text style={styles.sceneText}>{scene.text || 'No scene text provided.'}</Text>
+    <SafeAreaView style={commonStyles.safeAreaContainer}>
+      <ScrollView contentContainerStyle={commonStyles.scrollContent}>
+        <View style={commonStyles.container}>
+          <Text style={commonStyles.coloredTitle}>{story.title}</Text>
+          <Text style={commonStyles.paragraph}>{scene.text || 'No scene text provided.'}</Text>
 
-        {scene.choices && scene.choices.length > 0 && (
-          <View>
-            {scene.choices.map((choice, idx) => (
-              <View key={choice.text + idx} style={styles.choiceButton}>
-                <Button
-                  title={choice.text}
+          {scene.choices && scene.choices.length > 0 && (
+            <View>
+              {scene.choices.map((choice, idx) => (
+                <TouchableOpacity 
+                  key={choice.text + idx} 
+                  style={commonStyles.buttonPrimary}
                   onPress={() => {
                     if (choice.nextSceneIndex !== undefined && choice.nextSceneIndex !== null) {
                       const nextScene = story.scenes.find(s => s.id === choice.nextSceneIndex);
@@ -108,16 +114,16 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
                       }
                     }
                   }}
-                />
-              </View>
-            ))}
-          </View>
-        )}
+                >
+                  <Text style={commonStyles.buttonText}>{choice.text}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
-        {!scene.choices?.length && scene.nextSceneIndex !== undefined && (
-          <View style={styles.choiceButton}>
-            <Button
-              title="Continue"
+          {!scene.choices?.length && scene.nextSceneIndex !== undefined && (
+            <TouchableOpacity 
+              style={commonStyles.buttonPrimary}
               onPress={() => {
                 const nextScene = story.scenes.find(s => s.id === scene.nextSceneIndex);
                 if (nextScene) {
@@ -128,93 +134,21 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
                   }
                 }
               }}
-            />
-          </View>
-        )}
-      </ScrollView>
+            >
+              <Text style={commonStyles.buttonText}>Continue</Text>
+            </TouchableOpacity>
+          )}
 
-      <View style={styles.buttonContainer}>
-        <Button title="Go Back" onPress={() => navigation.goBack()} />
-      </View>
+          <TouchableOpacity 
+            style={commonStyles.buttonOutline}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={commonStyles.buttonTextOutline}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 export default StorySceneScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
-  },
-  scrollContainer: {
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#ff6b6b',
-  },
-  sceneText: {
-    fontSize: 18,
-    lineHeight: 26,
-  },
-  buttonContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  choiceButton: {
-    marginVertical: 5,
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  // Styles from PrologueScreen for consistency
-  prologueCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  prologueText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-    marginBottom: 16,
-  },
-  continueButton: {
-    backgroundColor: '#ff6b6b',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  continueButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  backButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 5,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ff6b6b',
-  },
-  backButtonText: {
-    color: '#ff6b6b',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-});
