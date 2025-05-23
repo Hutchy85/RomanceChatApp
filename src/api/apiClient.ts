@@ -1,5 +1,17 @@
+// Remove the react-native-config import
+// import Config from 'react-native-config';
+
+console.log('Environment variables:', process.env);
+console.log('API_KEY from env:', process.env.EXPO_PUBLIC_API_KEY);
+console.log('API_KEY type:', typeof process.env.EXPO_PUBLIC_API_KEY);
+
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
+
+if (!API_KEY) {
+  console.error('API_KEY is not loaded! Check your .env file.');
+}
+
 const BASE_URL = 'https://api.venice.ai/api/v1';
-const API_KEY = 'Bearer HGXiK6Pvez5EY3lRR91HLdkjkeEEHUojp4Q0EA9vUT';
 
 export const getChatbotReply = async (
   history: { role: string; content: string }[],
@@ -11,7 +23,7 @@ export const getChatbotReply = async (
     const response = await fetch(`${BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': API_KEY,
+        'Authorization': API_KEY ?? '',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
@@ -19,7 +31,7 @@ export const getChatbotReply = async (
 
     if (!response.ok) throw new Error('AI request failed');
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || 'Sorry, I didn’t quite get that.';
+    return data.choices?.[0]?.message?.content || "Sorry, I didn't quite get that.";
   } catch (error) {
     console.error('[getChatbotReply]', error);
     return 'Sorry, I had trouble replying. Please try again.';
