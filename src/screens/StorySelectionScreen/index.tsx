@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   View, 
   Text, 
-  StyleSheet, 
   FlatList, 
   TouchableOpacity, 
   Image, 
@@ -17,6 +16,7 @@ import { clearSession, clearLastOpenedSession } from '../../data/sessionstorage'
 import { hasSavedSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { commonStyles } from '../../styles';
 
 type StorySelectionScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
@@ -53,34 +53,34 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
   
     return (
-      <View style={styles.storyCard}>
+      <View style={commonStyles.storyCard}>
         <Image 
           source={imageSource}
-          style={styles.storyImage}
+          style={commonStyles.storyImage}
           resizeMode="cover"
         />
-        <View style={styles.storyDetails}>
-          <Text style={styles.storyTitle}>{item.title}</Text>
-          <Text style={styles.storyDescription}>{item.description}</Text>
-          <View style={styles.storyMeta}>
-            <Text style={styles.storyMetaText}>Duration: {item.duration}</Text>
-            <Text style={styles.storyMetaText}>Theme: {item.theme}</Text>
+        <View style={commonStyles.storyDetails}>
+          <Text style={commonStyles.storyTitle}>{item.title}</Text>
+          <Text style={commonStyles.storyDescription}>{item.description}</Text>
+          <View style={commonStyles.storyMeta}>
+            <Text style={commonStyles.storyMetaText}>Duration: {item.duration}</Text>
+            <Text style={commonStyles.storyMetaText}>Theme: {item.theme}</Text>
           </View>
   
           {/* Start New Story Button */}
           <TouchableOpacity 
-            style={styles.startButton}
+            style={commonStyles.buttonPrimary}
             onPress={() => handleStartStory(item.id)}
           >
-            <Text style={styles.startButtonText}>Start Story</Text>
+            <Text style={commonStyles.buttonText}>Start Story</Text>
           </TouchableOpacity>
   
           {/* Continue Story Button */}
           <TouchableOpacity 
-            style={[styles.startButton, styles.continueButton]}
+            style={commonStyles.buttonSuccess}
             onPress={() => handleContinueStoryById(item.id)}
           >
-            <Text style={styles.startButtonText}>Continue Story</Text>
+            <Text style={commonStyles.buttonText}>Continue Story</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -88,100 +88,20 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   };  
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.subtitle}>
+    <View style={commonStyles.container}>
+      <Text style={commonStyles.subtitle}>
         Choose a story to begin your interactive romance experience
       </Text>
 
-      <Text style={styles.sectionTitle}>Available Stories</Text>
+      <Text style={commonStyles.sectionTitle}>Available Stories</Text>
       <FlatList
         data={stories}
         renderItem={renderStoryItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={commonStyles.listContainer}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    padding: 16,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#777',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  storyCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  storyImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    backgroundColor: '#eee',
-  },
-  storyDetails: {
-    padding: 16,
-  },
-  storyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ff6b6b',
-    marginBottom: 8,
-  },
-  storyDescription: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  storyMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  storyMetaText: {
-    fontSize: 12,
-    color: '#777',
-  },
-  startButton: {
-    backgroundColor: '#ff6b6b',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  continueButton: {
-    backgroundColor: '#4caf50',
-    marginTop: 10,
-  },
-  startButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-});
 
 export default StorySelectionScreen;
