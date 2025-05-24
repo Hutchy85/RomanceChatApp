@@ -1,6 +1,3 @@
-// Remove the react-native-config import
-// import Config from 'react-native-config';
-
 console.log('Environment variables:', process.env);
 console.log('API_KEY from env:', process.env.EXPO_PUBLIC_API_KEY);
 console.log('API_KEY type:', typeof process.env.EXPO_PUBLIC_API_KEY);
@@ -8,7 +5,7 @@ console.log('API_KEY type:', typeof process.env.EXPO_PUBLIC_API_KEY);
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 
 if (!API_KEY) {
-  console.error('API_KEY is not loaded! Check your .env file.');
+  console.error('API_KEY is not loaded! Check your app config or .env settings.');
 }
 
 const BASE_URL = 'https://api.venice.ai/api/v1';
@@ -29,7 +26,11 @@ export const getChatbotReply = async (
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) throw new Error('AI request failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`AI request failed: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
     return data.choices?.[0]?.message?.content || "Sorry, I didn't quite get that.";
   } catch (error) {
