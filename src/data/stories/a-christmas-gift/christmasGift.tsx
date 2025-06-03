@@ -233,6 +233,12 @@ sceneTriggers: [
   id: 'end_night',
   type: 'story',
   text: "Sleep came in fits and starts, your mind replaying the evening in fragments. Holly stirred beside you in the dark, but by morning, things felt ordinary again. The weekend came and went like any other. Errands, lazy breakfasts, and movie nights filled the time, and by Sunday night you found yourself wondering why you'd been so worked up about the party. Holly didn’t seem any different — cheerful, affectionate, her usual self.\n\nBy Monday morning, the alarm buzzed and it was time to face another week at the office.",
+  nextSceneIndex: 'weekend_stress'
+},
+{
+  id: 'weekend_stress',
+  type: 'story',
+  text: "Saturday morning brought the usual routine, but as you sat at the kitchen table with bills spread out before you, the weight of your new mortgage rates hit hard. Holly padded in wearing her robe, coffee mug in hand.\n\n'How bad is it?' she asked, noticing your expression.\n\n'The refinancing didn't go through,' you admitted. 'Payments are going up by £400 a month.'\n\nHolly sat down heavily. 'Christ. And with my hours being cut at the salon...'\n\nYou both stared at the bills in silence. Your new job paid well, but not well enough for this. Holly reached over and squeezed your hand.\n\n'We'll figure it out,' she said, but you could hear the worry in her voice.\n\nAs Sunday evening rolled around, you found yourself thinking about work - and about Mike's obnoxious behavior at the party. Part of you was dreading Monday morning.",
   nextSceneIndex: 'monday_morning'
 },
 
@@ -284,7 +290,7 @@ sceneTriggers: [
 {
   id: 'mike_offer',
   type: 'story',
-  text: "You felt a surge of protectiveness. 'Why are you asking?'\n\nMike flashed a grin. 'I was thinking you could set me up with her. She was hot.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you’re a great guy, and I reckon she’d love me. Tell you what — you set me up, I’ll double your end-of-year bonus.'",
+  text: "You felt a surge of protectiveness. 'Why are you asking?'\n\nMike flashed a grin. 'I was thinking you could set me up with her. She was hot.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you're a great guy, and I reckon she'd love me. Tell you what — you set me up, I'll double your end-of-year bonus. That's an extra £3,000 mate. Plus I'll make sure you're first in line for that senior position opening up.'",
   choices: [
     {
       text: "Laugh it off. 'Not happening, mate.'",
@@ -343,7 +349,7 @@ sceneTriggers: [
 {
   id: 'temptation',
   type: 'story',
-  text: "You tried to keep your cool as Mike smirked. The idea of an extra bonus gnawed at you. Holly had been desperate for a break. The cash would help…\n\nWould she go for it? A fake date, a quick con, and swindle this prick?\n\nYou took a breath.",
+  text: "You tried to keep your cool as Mike smirked. An extra £3,000 would cover the mortgage increase for months. Holly's hours had been cut, and the bills were piling up. The idea of conning this arrogant prick was starting to feel less crazy and more... necessary.",
   choices: [
     {
       text: "'You know what, Mike… I’ll ask her.'",
@@ -362,15 +368,19 @@ sceneTriggers: [
   nextSceneIndex: 'post_mike_thoughts'
 },
 {
+  id: 'mike_gloat',
+  type: 'story',
+  text: "'Brilliant!' Mike's eyes lit up. 'I knew you were a good lad, John. Look, between you and me...' He leaned in conspiratorially. 'I've been watching you since you started. You've got potential, but you need someone in your corner. Help me out with your sister, and I'll make sure you get that promotion that's coming up. Plus the bonus, obviously.'\n\nHe clapped you on the shoulder. 'Just get me her number, yeah? I'll take it from there.'\n\nAs Mike walked away whistling, you felt a knot forming in your stomach. What had you just agreed to?",
+  nextSceneIndex: 'mesage_holly'
+},
+{
   id: 'post_mike_thoughts',
   type: 'story',
   text: "You exhaled and leaned back in your chair. The idea of conning Mike for his bonus still lingered. Maybe you should talk to Holly… see what she thinks.",
-  nextSceneIndex: 'next_scene'
+  nextSceneIndex: 'message_holly'
 },
-
-
 {
-  id: 'next_scene',
+  id: 'message_holly',
   type: 'chat',
   characterName: 'Holly',
   systemPrompt:
@@ -382,12 +392,19 @@ sceneTriggers: [
 * Tease John about "selling" you to Mike
 * Agree to go along with John's plan to mess with Mike
 * Make it clear that you're only doing it for fun and to get back at Mike
+* You and John are struggling with increased mortgage payments
 
 **Background:**
 
 * You have a strong and playful relationship with John
 * You're not afraid to speak your mind and stand up for yourself
 * You think Mike is an arsehole and would love to see him get taken down a peg
+* You should be:
+* Initially shocked/mock-outraged about the "sister" lie
+* Quick to realize this is actually a perfect setup for a con
+* Excited about the potential to get money from Mike AND get revenge
+* Clever about planning how to maximize the financial benefit
+* Supportive of John while also teasing him about the ridiculous situation
 
 **Flow Order:**
 
