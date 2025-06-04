@@ -401,6 +401,18 @@ sceneTriggers: [
 * "Okay, I'll do it. But if you get jealous, that's your punishment for pimping me out."
 * "I'll make sure to lead him on and then dump him. And then we can enjoy the extra cash."
 * "Love you too.`,
-   }
+sceneTriggers: [
+  {
+    keyword: 'home',
+    nextSceneIndex: 'transition_to_mike',
+  },
+],
+   },
+   {
+    id: "transition_to_mike",
+    type: "story",
+    text: "As you swipe into a chat with Mike, you feel a mix of excitement and apprehension. You type out a message, your fingers hovering over the screen for a moment before you hit send.",
+    nextSceneIndex: "message_mike",
+  },
 ]
   };
