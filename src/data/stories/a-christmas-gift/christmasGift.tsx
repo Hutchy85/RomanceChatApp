@@ -232,7 +232,7 @@ sceneTriggers: [
 {
   id: 'end_night',
   type: 'story',
-  text: "Sleep came in fits and starts, your mind replaying the evening in fragments. Holly stirred beside you in the dark, but by morning, things felt ordinary again. The weekend came and went like any other. Errands, lazy breakfasts, and movie nights filled the time, and by Sunday night you found yourself wondering why you'd been so worked up about the party. Holly didn’t seem any different — cheerful, affectionate, her usual self.\n\nBy Monday morning, the alarm buzzed and it was time to face another week at the office.",
+  text: "Sleep came in fits and starts, your mind replaying the evening in fragments. Holly stirred beside you in the dark, but by morning, things felt ordinary again.",
   nextSceneIndex: 'weekend_stress'
 },
 {
@@ -241,144 +241,98 @@ sceneTriggers: [
   text: "Saturday morning brought the usual routine, but as you sat at the kitchen table with bills spread out before you, the weight of your new mortgage rates hit hard. Holly padded in wearing her robe, coffee mug in hand.\n\n'How bad is it?' she asked, noticing your expression.\n\n'The refinancing didn't go through,' you admitted. 'Payments are going up by £400 a month.'\n\nHolly sat down heavily. 'Christ. And with my hours being cut at the salon...'\n\nYou both stared at the bills in silence. Your new job paid well, but not well enough for this. Holly reached over and squeezed your hand.\n\n'We'll figure it out,' she said, but you could hear the worry in her voice.\n\nAs Sunday evening rolled around, you found yourself thinking about work - and about Mike's obnoxious behavior at the party. Part of you was dreading Monday morning.",
   nextSceneIndex: 'monday_morning'
 },
-
 {
-  id: 'monday_morning',
-  type: 'story',
-  text: "You sat at your desk, sipping lukewarm coffee and trying to shake off the lingering annoyance from the party now you were back in the office. Just as you started to find a rhythm, Mike appeared, leaning against your cubicle with a smirk.\n\n'Hey John, what's up?' he asked casually.",
-  choices: [
-    {
-      text: "'What do you want, Mike?'",
-      nextSceneIndex: 'mike_chat'
-    },
-    {
-      text: "Ignore him and focus on your screen.",
-      nextSceneIndex: 'mike_pushy'
-    }
-  ]
-},
-{
-  id: 'mike_chat',
-  type: 'story',
-  text: "Mike chuckled. 'Whoa, watch it with the tone, buddy. Can't a guy just say hi?'\n\nYou sighed. 'Hi Mike. What do you want?'\n\n'Last night was good, wasn’t it?' he grinned. 'I was absolutely wasted.'\n\nHe leaned closer. 'Hey, who was that girl you were with? Your sister? A friend?'",
-  choices: [
-    {
-      text: "'Why are you asking?'",
-      nextSceneIndex: 'mike_offer'
-    },
-    {
-      text: "'None of your business, Mike.'",
-      nextSceneIndex: 'mike_annoyed'
-    }
-  ]
-},
-{
-  id: 'mike_pushy',
-  type: 'story',
-  text: "Mike wasn’t the type to be ignored. 'C'mon, mate,' he said, leaning in. 'Good party last night, right? Hey — who was that girl you had with you? She was a stunner. Your sister or something?'",
-  choices: [
-    {
-      text: "'Why do you want to know?'",
-      nextSceneIndex: 'mike_offer'
-    },
-    {
-      text: "'Drop it, Mike.'",
-      nextSceneIndex: 'mike_annoyed'
-    }
-  ]
-},
-{
-  id: 'mike_offer',
-  type: 'story',
-  text: "You felt a surge of protectiveness. 'Why are you asking?'\n\nMike flashed a grin. 'I was thinking you could set me up with her. She was hot.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you're a great guy, and I reckon she'd love me. Tell you what — you set me up, I'll double your end-of-year bonus. That's an extra £3,000 mate. Plus I'll make sure you're first in line for that senior position opening up.'",
-  choices: [
-    {
-      text: "Laugh it off. 'Not happening, mate.'",
-      nextSceneIndex: 'mike_persist'
-    },
-    {
-      text: "Lie: 'She's my sister.'",
-      nextSceneIndex: 'mike_sister'
-    },
-    {
-      text: "Consider it… Holly could fake a date for the cash.",
-      nextSceneIndex: 'temptation'
-    }
-  ]
-},
-{
-  id: 'mike_annoyed',
-  type: 'story',
-  text: "'Alright, alright,' Mike smirked, raising his hands. 'No need to get pissy.'\n\nBut he didn’t leave. 'Who was she, then? I’m telling you — she was hot.'",
-  choices: [
-    {
-      text: "Lie: 'She's my sister.'",
-      nextSceneIndex: 'mike_sister'
-    },
-    {
-      text: "'None of your business, Mike.'",
-      nextSceneIndex: 'mike_persist'
-    }
-  ]
-},
-{
-  id: 'mike_persist',
-  type: 'story',
-  text: "'C'mon, John,' Mike chuckled. 'You left sharpish last night. Just a name. I swear — I'd treat her like a queen.'\n\nYou clenched your jaw, feeling the temptation of that bonus offer.",
-  choices: [
-    {
-      text: "Lie: 'She's my sister.'",
-      nextSceneIndex: 'mike_sister'
-    },
-    {
-      text: "Consider it… could Holly pull this con?",
-      nextSceneIndex: 'temptation'
-    },
-    {
-      text: "'Not happening.'",
-      nextSceneIndex: 'mike_walks'
-    }
-  ]
-},
-{
-  id: 'mike_sister',
-  type: 'story',
-  text: "'She’s my sister,' you lied, your voice tight.\n\nMike’s eyes widened. 'Whoa! I didn’t know you had a hot sister. You look nothing alike.'\n\nYou forced a tight smile. 'Step-sister.'\n\nMike laughed. 'Ah — makes sense. Knew she wasn’t your missus. No offense, mate, but no way you’re pulling someone like that.'",
-  nextSceneIndex: 'temptation'
-},
-{
-  id: 'temptation',
-  type: 'story',
-  text: "You tried to keep your cool as Mike smirked. An extra £3,000 would cover the mortgage increase for months. Holly's hours had been cut, and the bills were piling up. The idea of conning this arrogant prick was starting to feel less crazy and more... necessary.",
-  choices: [
-    {
-      text: "'You know what, Mike… I’ll ask her.'",
-      nextSceneIndex: 'mike_gloat'
-    },
-    {
-      text: "'Forget it, Mike. Not happening.'",
-      nextSceneIndex: 'mike_walks'
-    }
-  ]
-},
-{
-  id: 'mike_walks',
-  type: 'story',
-  text: "Mike raised an eyebrow. 'Suit yourself, John. Shame though — she'd have loved me.' He sauntered off, still grinning to himself.\n\nYou stared at your screen, your mind spinning.",
-  nextSceneIndex: 'post_mike_thoughts'
-},
-{
-  id: 'mike_gloat',
-  type: 'story',
-  text: "'Brilliant!' Mike's eyes lit up. 'I knew you were a good lad, John. Look, between you and me...' He leaned in conspiratorially. 'I've been watching you since you started. You've got potential, but you need someone in your corner. Help me out with your sister, and I'll make sure you get that promotion that's coming up. Plus the bonus, obviously.'\n\nHe clapped you on the shoulder. 'Just get me her number, yeah? I'll take it from there.'\n\nAs Mike walked away whistling, you felt a knot forming in your stomach. What had you just agreed to?",
-  nextSceneIndex: 'mesage_holly'
-},
-{
-  id: 'post_mike_thoughts',
-  type: 'story',
-  text: "You exhaled and leaned back in your chair. The idea of conning Mike for his bonus still lingered. Maybe you should talk to Holly… see what she thinks.",
-  nextSceneIndex: 'message_holly'
-},
+    id: "monday_morning",
+    type: "story",
+    text: "You sat at your desk, sipping lukewarm coffee and trying to shake off the lingering annoyance from the party now you were back in the office. Just as you started to find a rhythm, Mike appeared, leaning against your cubicle with a smirk.\n\n'Hey John, what's up?' he asked casually.",
+    choices: [
+      { text: "'What do you want, Mike?'", nextSceneIndex: "mike_chat" },
+      { text: "Ignore him and focus on your screen.", nextSceneIndex: "mike_pushy" }
+    ]
+  },
+  {
+    id: "mike_chat",
+    type: "story",
+    text: "Mike chuckled. 'Whoa, watch it with the tone, buddy. Can't a guy just say hi?'\n\nYou sighed. 'Hi Mike. What do you want?'\n\n'Last night was good, wasn’t it?' he grinned. 'I was absolutely wasted.'\n\nHe leaned closer. 'Hey, who was that girl you were with? Your sister? A friend?'",
+    choices: [
+      { text: "'None of your business.'", nextSceneIndex: "mike_annoyed" },
+      { text: "'Why are you asking?'", nextSceneIndex: "mike_offer" }
+    ]
+  },
+  {
+    id: "mike_pushy",
+    type: "story",
+    text: "Mike wasn’t the type to be ignored. 'C'mon, mate,' he said, leaning in. 'Good party last night, right? Hey — who was that girl you had with you? She was a stunner. Your sister or something?'",
+    choices: [
+      { text: "'Why do you care?'", nextSceneIndex: "mike_offer" },
+      { text: "'Drop it, Mike.'", nextSceneIndex: "mike_annoyed" }
+    ]
+  },
+  {
+    id: "mike_annoyed",
+    type: "story",
+    text: "'Alright, alright,' Mike smirked, raising his hands. 'No need to get pissy.'\n\nBut he didn’t leave. 'Who was she, then? I’m telling you — she was hot.'",
+    choices: [
+      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
+      { text: "'Still none of your business.'", nextSceneIndex: "mike_offer" }
+    ]
+  },
+  {
+    id: "mike_offer",
+    type: "story",
+    text: "Mike grinned. 'I was thinking you could set me up with her. She was hot.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you're a great guy, and I reckon she'd love me. Tell you what — you set me up, I'll double your end-of-year bonus. That's an extra £3,000 mate. Plus I'll make sure you're first in line for that senior position opening up.'",
+    choices: [
+      { text: "Laugh it off. 'Not happening, mate.'", nextSceneIndex: "mike_persist" },
+      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
+      { text: "Consider it… Holly could fake a date for the cash.", nextSceneIndex: "temptation" }
+    ]
+  },
+  {
+    id: "mike_persist",
+    type: "story",
+    text: "'C'mon, John,' Mike chuckled. 'You left sharpish last night. Just a name. I swear — I'd treat her like a queen.'\n\nYou clenched your jaw, feeling the temptation of that bonus offer lingering in the air.",
+    choices: [
+      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
+      { text: "'Forget it.'", nextSceneIndex: "mike_walks" },
+      { text: "Consider it…", nextSceneIndex: "temptation" }
+    ]
+  },
+  {
+    id: "mike_sister",
+    type: "story",
+    text: "'She’s my sister,' you lied, your voice tight.\n\nMike’s eyes widened. 'Whoa! I didn’t know you had a hot sister. You look nothing alike.'\n\nYou forced a tight smile. 'Step-sister.'\n\nMike laughed. 'Ah — makes sense. Knew she wasn’t your missus. No offense, mate, but no way you’re pulling someone like that.'",
+    choices: [
+      { text: "'Forget it, Mike.'", nextSceneIndex: "mike_walks" },
+      { text: "Consider the con…", nextSceneIndex: "temptation" }
+    ]
+  },
+  {
+    id: "temptation",
+    type: "story",
+    text: "You tried to keep your cool as Mike smirked. An extra £3,000 would cover the mortgage increase for months. Holly's hours had been cut, and the bills were piling up. The idea of conning this arrogant prick was starting to feel less crazy and more... necessary.",
+    choices: [
+      { text: "'You know what, Mike… I'll ask her.'", nextSceneIndex: "mike_gloat" },
+      { text: "'Forget it, Mike. Not happening.'", nextSceneIndex: "mike_walks" }
+    ]
+  },
+  {
+    id: "mike_gloat",
+    type: "story",
+    text: "'Brilliant!' Mike's eyes lit up. 'I knew you were a good lad, John. Look, between you and me...' He leaned in conspiratorially. 'I've been watching you since you started. You've got potential, but you need someone in your corner. Help me out with your sister, and I'll make sure you get that promotion that's coming up. Plus the bonus, obviously.'\n\nHe clapped you on the shoulder. 'Just get me her number, yeah? I'll take it from there.'\n\nAs Mike walked away whistling, you felt a knot forming in your stomach. What had you just agreed to?",
+    nextSceneIndex: "message_holly"
+  },
+  {
+    id: "mike_walks",
+    type: "story",
+    text: "Mike raised an eyebrow. 'Suit yourself, John. Shame though — she'd have loved me.' He sauntered off, still grinning to himself.\n\nYou stared at your screen, your mind spinning.",
+    nextSceneIndex: "post_mike_thoughts"
+  },
+  {
+    id: "post_mike_thoughts",
+    type: "story",
+    text: "You exhaled and leaned back in your chair. The idea of conning Mike for his bonus still lingered. Maybe you should talk to Holly… see what she thinks.",
+    nextSceneIndex: "message_holly"
+  },
 {
   id: 'message_holly',
   type: 'chat',
