@@ -79,12 +79,20 @@ imageTriggers: [
     images: [imageMap.redDress, imageMap.blackJumpsuit],
   },
 ],
-sceneTriggers: [
-  {
-    keyword: 'home',
-    nextSceneIndex: 'partyArrival',
-  },
-],
+ sceneTriggers: [
+        {
+          keyword: 'meet you at home', // More specific phrase
+          nextSceneIndex: 'partyArrival',
+        },
+        {
+          keyword: 'see you at home', // Alternative phrasing
+          nextSceneIndex: 'partyArrival',
+        },
+        {
+          keyword: 'heading home now', // Another alternative
+          nextSceneIndex: 'partyArrival',
+        },
+      ],
 },
 {
   id: 'partyArrival',
@@ -402,11 +410,23 @@ sceneTriggers: [
 * "I'll make sure to lead him on and then dump him. And then we can enjoy the extra cash."
 * "Love you too.`,
 sceneTriggers: [
-  {
-    keyword: 'home',
-    nextSceneIndex: 'transition_to_mike',
-  },
-],
+        {
+          keyword: 'let\'s go home', // Specific phrase indicating readiness to proceed
+          nextSceneIndex: 'transition_to_mike',
+        },
+        {
+          keyword: 'ready to message mike', // Clear intent to move forward
+          nextSceneIndex: 'transition_to_mike',
+        },
+        {
+          keyword: 'time to contact mike', // Alternative phrasing
+          nextSceneIndex: 'transition_to_mike',
+        },
+        {
+          keyword: 'let\'s do this', // More casual trigger
+          nextSceneIndex: 'transition_to_mike',
+        },
+      ],
    },
    {
     id: "transition_to_mike",
