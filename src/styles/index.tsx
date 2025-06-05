@@ -72,7 +72,7 @@ export const commonStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.xl,
+    padding: spacing.lg,
   },
   safeAreaContainer: {
     flex: 1,
@@ -80,6 +80,12 @@ export const commonStyles = StyleSheet.create({
   },
   fullWidthContainer: {
     width: '100%',
+  },
+  emptyListContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginTop: 50, 
   },
   centerContent: {
     justifyContent: 'center',
@@ -104,13 +110,13 @@ export const commonStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.primary,
     textAlign: 'center',
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.lg,
   },
   subtitle: {
     fontSize: fontSizes.medium,
     color: colors.darkGray,
     textAlign: 'center',
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: fontSizes.large,
@@ -129,6 +135,10 @@ export const commonStyles = StyleSheet.create({
     color: colors.error,
     textAlign: 'center',
     margin: spacing.xxl,
+  },
+  emptyListText: {
+    fontSize: 16, 
+    color: '#888',
   },
   
   // Cards and content containers
