@@ -123,6 +123,7 @@ export const commonStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textDark,
     marginBottom: spacing.md,
+    marginLeft: spacing.sm,
   },
   paragraph: {
     fontSize: fontSizes.medium,
@@ -197,6 +198,7 @@ export const commonStyles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.primary,
+    marginBottom: spacing.md,
   },
   buttonDisabled: {
     backgroundColor: colors.darkGray,

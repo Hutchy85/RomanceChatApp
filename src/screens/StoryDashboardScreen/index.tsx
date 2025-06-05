@@ -70,7 +70,7 @@ const BADGE_DEFINITIONS: Omit<Badge, 'earned' | 'earnedDate'>[] = [
     name: 'Story Starter',
     description: 'Started your first story',
     icon: '📖',
-    color: colors.success || colors.primary,
+    color: colors.success,
   },
   {
     id: 'explorer',
@@ -261,7 +261,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
       style={[
         dashboardStyles.badge,
         size === 'medium' && dashboardStyles.badgeMedium,
-        { backgroundColor: badge.earned ? badge.color : colors.lightGray || '#E0E0E0' },
+        { backgroundColor: badge.earned ? badge.color : colors.lightGray },
         !badge.earned && dashboardStyles.badgeUnearnned,
       ]}
     >
@@ -288,11 +288,15 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
 
     return (
-      <View key={progress.storyId} style={dashboardStyles.storyCard}>
-        <View style={dashboardStyles.storyHeader}>
-          <Image source={imageSource} style={dashboardStyles.storyThumbnail} resizeMode="cover" />
+      <View key={progress.storyId} style={commonStyles.storyCard}>
+        <View style={[commonStyles.flexRow, { marginBottom: spacing.lg, marginLeft: spacing.sm, marginTop: spacing.sm }]}>
+          <Image 
+            source={imageSource} 
+            style={dashboardStyles.storyThumbnail} 
+            resizeMode="cover" 
+          />
           <View style={dashboardStyles.storyHeaderInfo}>
-            <Text style={dashboardStyles.storyTitle}>{story.title}</Text>
+            <Text style={commonStyles.storyTitle}>{story.title}</Text>
             <Text style={dashboardStyles.storyMeta}>
               {progress.messagesCount} messages • {formatLastPlayed(progress.lastPlayedDate)}
             </Text>
@@ -307,10 +311,10 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
           </ScrollView>
         </View>
 
-        <View style={dashboardStyles.storyActions}>
+        <View style={[commonStyles.flexRow, commonStyles.spaceBetween]}>
           {progress.messagesCount > 0 ? (
             <TouchableOpacity
-              style={[commonStyles.buttonSuccess || commonStyles.buttonPrimary, dashboardStyles.actionButton]}
+              style={[commonStyles.buttonSuccess, dashboardStyles.actionButton]}
               onPress={() => handleContinueStory(progress.storyId)}
             >
               <Text style={commonStyles.buttonText}>Continue Story</Text>
@@ -353,14 +357,14 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     <SafeAreaView style={commonStyles.safeAreaContainer}>
       <ScrollView style={commonStyles.container} showsVerticalScrollIndicator={false}>
         {/* Header Section */}
-        <View style={dashboardStyles.header}>
+        <View style={commonStyles.centerContent}>
           <Text style={commonStyles.coloredTitle}>Your Story Journey</Text>
           <Text style={commonStyles.subtitle}>Track your progress and unlock achievements</Text>
         </View>
 
         {/* Overall Progress Section */}
-        <View style={[commonStyles.card, dashboardStyles.overallProgressCard]}>
-          <Text style={dashboardStyles.sectionTitle}>Overall Progress</Text>
+        <View style={[commonStyles.card, commonStyles.centerContent]}>
+          <Text style={commonStyles.sectionTitle}>Overall Progress</Text>
           {renderProgressBar(overallProgress)}
           
           <View style={dashboardStyles.statsRow}>
@@ -383,7 +387,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
 
         {/* Achievement Showcase */}
         <View style={[commonStyles.card, dashboardStyles.achievementCard]}>
-          <Text style={dashboardStyles.sectionTitle}>Latest Achievements</Text>
+          <Text style={commonStyles.sectionTitle}>Latest Achievements</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {storyProgresses
               .flatMap(p => p.badges)
@@ -398,7 +402,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
         </View>
 
         {/* Stories Section */}
-        <Text style={dashboardStyles.sectionTitle}>Your Stories</Text>
+        <Text style={commonStyles.sectionTitle}>Your Stories</Text>
         {storyProgresses.map(renderStoryCard)}
 
         {/* Navigation Actions */}
@@ -415,34 +419,20 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   );
 };
 
-// Dashboard-specific styles
+// Dashboard-specific styles (reduced, using more common styles)
 const dashboardStyles = {
-  header: {
-    alignItems: 'center' as const,
-    marginBottom: spacing.xxl || 32,
-  },
-  overallProgressCard: {
-    alignItems: 'center' as const,
-  },
-  sectionTitle: {
-    fontSize: fontSizes.large || 18,
-    fontWeight: 'bold' as const,
-    color: colors.textDark || '#333',
-    marginBottom: spacing.lg || 16,
-    textAlign: 'center' as const,
-  },
   progressBarContainer: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     alignSelf: 'stretch' as 'stretch',
-    marginVertical: spacing.md || 12,
+    marginVertical: spacing.md,
   },
   progressBarBackground: {
     flex: 1,
     height: 8,
-    backgroundColor: colors.lightGray || '#E0E0E0',
+    backgroundColor: colors.lightGray,
     borderRadius: 4,
-    marginRight: spacing.md || 12,
+    marginRight: spacing.md,
   },
   progressBarFill: {
     height: 8,
@@ -450,8 +440,8 @@ const dashboardStyles = {
     borderRadius: 4,
   },
   progressText: {
-    fontSize: fontSizes.small || 12,
-    color: colors.darkGray || '#666',
+    fontSize: fontSizes.small,
+    color: colors.darkGray,
     fontWeight: 'bold' as const,
     minWidth: 35,
   },
@@ -459,79 +449,69 @@ const dashboardStyles = {
     flexDirection: 'row' as const,
     justifyContent: 'space-around' as const,
     alignSelf: 'stretch' as const,
-    marginTop: spacing.lg || 16,
+    marginTop: spacing.lg,
   },
   statItem: {
     alignItems: 'center' as const,
   },
   statNumber: {
-    fontSize: fontSizes.heading || 24,
+    fontSize: fontSizes.heading,
     fontWeight: 'bold' as const,
     color: colors.primary,
   },
   statLabel: {
-    fontSize: fontSizes.small || 12,
-    color: colors.darkGray || '#666',
+    fontSize: fontSizes.small,
+    color: colors.darkGray,
     textAlign: 'center' as const,
   },
   achievementCard: {
     paddingHorizontal: 0,
+    paddingVertical: spacing.lg,
+    marginBottom: spacing.lg,
   },
   achievementItem: {
-    marginRight: spacing.md || 12,
-  },
-  storyCard: {
-    overflow: 'hidden' as 'hidden',
-    ...commonStyles.card,
-  },
-  storyHeader: {
-    flexDirection: 'row' as const,
-    marginBottom: spacing.lg || 16,
+    marginRight: spacing.md,
+    marginLeft: spacing.md,
   },
   storyThumbnail: {
     width: 60,
     height: 60,
-    borderRadius: borderRadius.md || 8,
-    marginRight: spacing.lg || 16,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.lg,
   },
   storyHeaderInfo: {
     flex: 1,
   },
-  storyTitle: {
-    fontSize: fontSizes.large || 18,
-    fontWeight: 'bold' as const,
-    color: colors.textDark || '#333',
-    marginBottom: spacing.xs || 4,
-  },
   storyMeta: {
-    fontSize: fontSizes.small || 12,
-    color: colors.darkGray || '#666',
-    marginBottom: spacing.md || 12,
+    fontSize: fontSizes.small,
+    color: colors.darkGray,
+    marginBottom: spacing.md,
   },
   badgeSection: {
-    marginBottom: spacing.lg || 16,
+    marginBottom: spacing.lg,
   },
   badgeSectionTitle: {
-    fontSize: fontSizes.medium || 14,
+    fontSize: fontSizes.medium,
     fontWeight: 'bold' as const,
-    color: colors.textDark || '#333',
-    marginBottom: spacing.sm || 8,
+    color: colors.textDark,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.sm,
   },
   badgesList: {
     flexDirection: 'row' as const,
   },
   badge: {
-    paddingHorizontal: spacing.md || 12,
-    paddingVertical: spacing.sm || 8,
-    borderRadius: borderRadius.round || 20,
-    marginRight: spacing.sm || 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.round,
+    marginRight: spacing.sm,
     alignItems: 'center' as const,
     minWidth: 40,
   },
   badgeMedium: {
     flexDirection: 'row' as const,
-    paddingHorizontal: spacing.lg || 16,
-    paddingVertical: spacing.md || 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     minWidth: 120,
   },
   badgeUnearnned: {
@@ -542,38 +522,34 @@ const dashboardStyles = {
   },
   badgeIconMedium: {
     fontSize: 20,
-    marginRight: spacing.sm || 8,
+    marginRight: spacing.sm,
   },
   badgeInfo: {
     flex: 1,
   },
   badgeName: {
-    fontSize: fontSizes.small || 12,
+    fontSize: fontSizes.small,
     fontWeight: 'bold' as const,
-    color: colors.textLight || colors.white || '#FFFFFF',
+    color: colors.textLight,
   },
   badgeNameUnearnned: {
-    color: colors.darkGray || '#666',
+    color: colors.darkGray,
   },
   badgeDescription: {
-    fontSize: fontSizes.small || 12,
-    color: colors.textLight || colors.white || '#FFFFFF',
+    fontSize: fontSizes.small,
+    color: colors.textLight,
     opacity: 0.8,
   },
   badgeDescriptionUnearnned: {
-    color: colors.darkGray || '#666',
-  },
-  storyActions: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
+    color: colors.darkGray,
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: spacing.xs || 4,
+    marginHorizontal: spacing.xs,
   },
   navigationActions: {
-    marginTop: spacing.xl || 24,
-    marginBottom: spacing.xxl || 32,
+    marginTop: spacing.xl,
+    marginBottom: spacing.xxl,
   },
 };
 
