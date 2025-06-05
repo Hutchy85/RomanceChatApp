@@ -6,12 +6,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import StorySelectionScreen from '../screens/StorySelectionScreen';
 import StorySceneScreen from '../screens/StorySceneScreen';
 import ChatScreen from '../screens/ChatScreen';
+import StoryDashboardScreen from '../screens/StoryDashboardScreen';
 
 // Define the navigation parameters
 export type RootStackParamList = {
   StorySelection: undefined;
   StoryScene: { storyId: string; sceneId?: string; isPrologue?: boolean };
   Chat: { storyId: string; sceneId: string; startNewSession?: boolean };
+  StoryDashboard: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -55,6 +57,14 @@ const Navigation = () => {
             title: 'Chat',
             headerBackTitle: 'Exit',
             headerLeft: () => null,
+          }}
+        />
+        <Stack.Screen
+          name="StoryDashboard"
+          component={StoryDashboardScreen}
+          options={{
+            title: 'Your Progress',
+            headerBackTitle: 'Back',
           }}
         />
       </Stack.Navigator>

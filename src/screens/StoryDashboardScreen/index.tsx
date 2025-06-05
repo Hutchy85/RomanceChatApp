@@ -12,14 +12,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation';
 import { stories } from '../../data/stories/index';
-import { Story, SavedSession, Message } from '../../types/index';
+import { Story, Message } from '../../types/index';
 import { loadSession, hasSavedSession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { commonStyles, colors, fontSizes, spacing, borderRadius } from '../../styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type StoryDashboardScreenProps = {
-  navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
+  navigation: StackNavigationProp<RootStackParamList, 'StoryDashboard'>;
 };
 
 // Story progress and badge types
@@ -70,7 +70,7 @@ const BADGE_DEFINITIONS: Omit<Badge, 'earned' | 'earnedDate'>[] = [
     name: 'Story Starter',
     description: 'Started your first story',
     icon: '📖',
-    color: colors.success,
+    color: colors.success || colors.primary,
   },
   {
     id: 'explorer',
@@ -119,9 +119,13 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
           }
 
           // Try to get last played date from AsyncStorage as well
-          const lastOpened = await AsyncStorage.getItem(`lastPlayed_${story.id}`);
-          if (lastOpened) {
-            lastPlayedDate = lastOpened;
+          try {
+            const lastOpened = await AsyncStorage.getItem(`lastPlayed_${story.id}`);
+            if (lastOpened) {
+              lastPlayedDate = lastOpened;
+            }
+          } catch (error) {
+            console.log('No last played date found for', story.id);
           }
         }
 
@@ -129,7 +133,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
         const completionPercentage = Math.min((messagesCount / 20) * 100, 100);
 
         // Calculate badges for this story
-        const badges = calculateBadgesForStory(story.id, messagesCount, hasSession);
+        const badges = calculateBadgesForStory(story.id, messagesCount, hasSession, progresses);
 
         progresses.push({
           storyId: story.id,
@@ -158,7 +162,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     }
   };
 
-  const calculateBadgesForStory = (storyId: string, messagesCount: number, hasSession: boolean): Badge[] => {
+  const calculateBadgesForStory = (storyId: string, messagesCount: number, hasSession: boolean, currentProgresses: StoryProgress[]): Badge[] => {
     return BADGE_DEFINITIONS.map((badgeDefinition) => {
       let earned = false;
       
@@ -176,8 +180,9 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
           earned = hasSession;
           break;
         case 'explorer':
-          // This would need to be calculated across all stories
-          earned = storyProgresses.filter(p => p.messagesCount > 0).length >= 3;
+          // Check current progresses plus this story
+          const storiesStarted = currentProgresses.filter(p => p.messagesCount > 0).length + (messagesCount > 0 ? 1 : 0);
+          earned = storiesStarted >= 3;
           break;
         case 'dedicated':
           // This would need day tracking - simplified for now
@@ -218,18 +223,22 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   const formatLastPlayed = (dateString?: string): string => {
     if (!dateString) return 'Never played';
     
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    
-    return date.toLocaleDateString();
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+      
+      if (diffInHours < 1) return 'Just now';
+      if (diffInHours < 24) return `${diffInHours}h ago`;
+      
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays === 1) return 'Yesterday';
+      if (diffInDays < 7) return `${diffInDays} days ago`;
+      
+      return date.toLocaleDateString();
+    } catch (error) {
+      return 'Unknown';
+    }
   };
 
   const renderProgressBar = (percentage: number) => (
@@ -252,7 +261,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
       style={[
         dashboardStyles.badge,
         size === 'medium' && dashboardStyles.badgeMedium,
-        { backgroundColor: badge.earned ? badge.color : colors.lightGray },
+        { backgroundColor: badge.earned ? badge.color : colors.lightGray || '#E0E0E0' },
         !badge.earned && dashboardStyles.badgeUnearnned,
       ]}
     >
@@ -301,7 +310,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
         <View style={dashboardStyles.storyActions}>
           {progress.messagesCount > 0 ? (
             <TouchableOpacity
-              style={[commonStyles.buttonSuccess, dashboardStyles.actionButton]}
+              style={[commonStyles.buttonSuccess || commonStyles.buttonPrimary, dashboardStyles.actionButton]}
               onPress={() => handleContinueStory(progress.storyId)}
             >
               <Text style={commonStyles.buttonText}>Continue Story</Text>
@@ -410,122 +419,119 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
 const dashboardStyles = {
   header: {
     alignItems: 'center' as const,
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.xxl || 32,
   },
   overallProgressCard: {
     alignItems: 'center' as const,
   },
   sectionTitle: {
-    fontSize: fontSizes.large,
+    fontSize: fontSizes.large || 18,
     fontWeight: 'bold' as const,
-    color: colors.textDark,
-    marginBottom: spacing.lg,
+    color: colors.textDark || '#333',
+    marginBottom: spacing.lg || 16,
     textAlign: 'center' as const,
   },
   progressBarContainer: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    width: '100%',
-    marginVertical: spacing.md,
+    alignSelf: 'stretch' as 'stretch',
+    marginVertical: spacing.md || 12,
   },
   progressBarBackground: {
     flex: 1,
     height: 8,
-    backgroundColor: colors.lightGray,
+    backgroundColor: colors.lightGray || '#E0E0E0',
     borderRadius: 4,
-    marginRight: spacing.md,
+    marginRight: spacing.md || 12,
   },
   progressBarFill: {
-    height: '100%',
+    height: 8,
     backgroundColor: colors.primary,
     borderRadius: 4,
   },
   progressText: {
-    fontSize: fontSizes.small,
-    color: colors.darkGray,
+    fontSize: fontSizes.small || 12,
+    color: colors.darkGray || '#666',
     fontWeight: 'bold' as const,
     minWidth: 35,
   },
   statsRow: {
     flexDirection: 'row' as const,
     justifyContent: 'space-around' as const,
-    width: '100%',
-    marginTop: spacing.lg,
+    alignSelf: 'stretch' as const,
+    marginTop: spacing.lg || 16,
   },
   statItem: {
     alignItems: 'center' as const,
   },
   statNumber: {
-    fontSize: fontSizes.heading,
+    fontSize: fontSizes.heading || 24,
     fontWeight: 'bold' as const,
     color: colors.primary,
   },
   statLabel: {
-    fontSize: fontSizes.small,
-    color: colors.darkGray,
+    fontSize: fontSizes.small || 12,
+    color: colors.darkGray || '#666',
     textAlign: 'center' as const,
   },
   achievementCard: {
     paddingHorizontal: 0,
   },
   achievementItem: {
-    marginRight: spacing.md,
+    marginRight: spacing.md || 12,
   },
   storyCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.xxl,
-    overflow: 'hidden',
+    overflow: 'hidden' as 'hidden',
     ...commonStyles.card,
   },
   storyHeader: {
     flexDirection: 'row' as const,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.lg || 16,
   },
   storyThumbnail: {
     width: 60,
     height: 60,
-    borderRadius: borderRadius.md,
-    marginRight: spacing.lg,
+    borderRadius: borderRadius.md || 8,
+    marginRight: spacing.lg || 16,
   },
   storyHeaderInfo: {
     flex: 1,
   },
   storyTitle: {
-    fontSize: fontSizes.large,
+    fontSize: fontSizes.large || 18,
     fontWeight: 'bold' as const,
-    color: colors.textDark,
-    marginBottom: spacing.xs,
+    color: colors.textDark || '#333',
+    marginBottom: spacing.xs || 4,
   },
   storyMeta: {
-    fontSize: fontSizes.small,
-    color: colors.darkGray,
-    marginBottom: spacing.md,
+    fontSize: fontSizes.small || 12,
+    color: colors.darkGray || '#666',
+    marginBottom: spacing.md || 12,
   },
   badgeSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.lg || 16,
   },
   badgeSectionTitle: {
-    fontSize: fontSizes.medium,
+    fontSize: fontSizes.medium || 14,
     fontWeight: 'bold' as const,
-    color: colors.textDark,
-    marginBottom: spacing.sm,
+    color: colors.textDark || '#333',
+    marginBottom: spacing.sm || 8,
   },
   badgesList: {
     flexDirection: 'row' as const,
   },
   badge: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.round,
-    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md || 12,
+    paddingVertical: spacing.sm || 8,
+    borderRadius: borderRadius.round || 20,
+    marginRight: spacing.sm || 8,
     alignItems: 'center' as const,
     minWidth: 40,
   },
   badgeMedium: {
     flexDirection: 'row' as const,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg || 16,
+    paddingVertical: spacing.md || 12,
     minWidth: 120,
   },
   badgeUnearnned: {
@@ -536,26 +542,26 @@ const dashboardStyles = {
   },
   badgeIconMedium: {
     fontSize: 20,
-    marginRight: spacing.sm,
+    marginRight: spacing.sm || 8,
   },
   badgeInfo: {
     flex: 1,
   },
   badgeName: {
-    fontSize: fontSizes.small,
+    fontSize: fontSizes.small || 12,
     fontWeight: 'bold' as const,
-    color: colors.textLight,
+    color: colors.textLight || colors.white || '#FFFFFF',
   },
   badgeNameUnearnned: {
-    color: colors.darkGray,
+    color: colors.darkGray || '#666',
   },
   badgeDescription: {
-    fontSize: fontSizes.xs || fontSizes.small,
-    color: colors.textLight,
+    fontSize: fontSizes.small || 12,
+    color: colors.textLight || colors.white || '#FFFFFF',
     opacity: 0.8,
   },
   badgeDescriptionUnearnned: {
-    color: colors.darkGray,
+    color: colors.darkGray || '#666',
   },
   storyActions: {
     flexDirection: 'row' as const,
@@ -563,11 +569,11 @@ const dashboardStyles = {
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: spacing.xs,
+    marginHorizontal: spacing.xs || 4,
   },
   navigationActions: {
-    marginTop: spacing.xl,
-    marginBottom: spacing.xxl,
+    marginTop: spacing.xl || 24,
+    marginBottom: spacing.xxl || 32,
   },
 };
 

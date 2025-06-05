@@ -48,6 +48,10 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     }
   };
 
+  const handleViewDashboard = () => {
+    navigation.navigate('StoryDashboard');
+  };
+
   const renderStoryItem = ({ item }: { item: Story }) => {
     // Use the image key from the story to fetch the image from the storyImages map
     const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
@@ -92,6 +96,14 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
       <Text style={commonStyles.subtitle}>
         Choose a story to begin your interactive romance experience
       </Text>
+
+      {/* Dashboard Button */}
+      <TouchableOpacity 
+        style={[commonStyles.buttonSecondary || commonStyles.buttonPrimary, { marginBottom: 16 }]}
+        onPress={handleViewDashboard}
+      >
+        <Text style={commonStyles.buttonText}>View Your Progress</Text>
+      </TouchableOpacity>
 
       <Text style={commonStyles.sectionTitle}>Available Stories</Text>
       <FlatList
