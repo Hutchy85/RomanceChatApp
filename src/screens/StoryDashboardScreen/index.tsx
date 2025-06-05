@@ -12,24 +12,27 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation';
 import { stories } from '../../data/stories/index';
-import { Story, Message } from '../../types/index';
-import { loadSession, hasSavedSession } from '../../data/sessionstorage';
+import { Story } from '../../types/index';
+import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
+import { StorySession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { commonStyles, colors, fontSizes, spacing, borderRadius } from '../../styles';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type StoryDashboardScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StoryDashboard'>;
 };
 
-// Story progress and badge types
+// Enhanced story progress interface
 interface StoryProgress {
   storyId: string;
-  messagesCount: number;
+  sessions: StorySession[];
+  totalMessagesCount: number;
   lastPlayedDate?: string;
   completionPercentage: number;
   currentScene?: string;
   badges: Badge[];
+  totalPlayTime: number;
+  mostRecentSession?: StorySession;
 }
 
 interface Badge {
@@ -42,7 +45,7 @@ interface Badge {
   color: string;
 }
 
-// Badge definitions
+// Enhanced badge definitions
 const BADGE_DEFINITIONS: Omit<Badge, 'earned' | 'earnedDate'>[] = [
   {
     id: 'first_message',
@@ -82,9 +85,30 @@ const BADGE_DEFINITIONS: Omit<Badge, 'earned' | 'earnedDate'>[] = [
   {
     id: 'dedicated',
     name: 'Dedicated Reader',
-    description: 'Played for 7+ days',
+    description: 'Played for 2+ hours total',
     icon: '⭐',
     color: colors.primary,
+  },
+  {
+    id: 'completionist',
+    name: 'Completionist',
+    description: 'Completed a story',
+    icon: '🏆',
+    color: colors.success,
+  },
+  {
+    id: 'choice_master',
+    name: 'Choice Master',
+    description: 'Made 50+ choices',
+    icon: '🎯',
+    color: colors.primary,
+  },
+  {
+    id: 'memory_keeper',
+    name: 'Memory Keeper',
+    description: 'Collected 10+ memories',
+    icon: '🧠',
+    color: colors.tertiary,
   },
 ];
 
@@ -93,6 +117,9 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   const [totalBadges, setTotalBadges] = useState(0);
   const [earnedBadges, setEarnedBadges] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Use the new session navigation context
+  const sessionNavigation = useSessionNavigation();
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -105,43 +132,53 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
       const progresses: StoryProgress[] = [];
       
       for (const story of stories) {
-        const hasSession = await hasSavedSession(story.id);
-        let messagesCount = 0;
-        let lastPlayedDate: string | undefined;
-        let currentScene: string | undefined;
+        // Get all sessions for this story using the new system
+        const sessions = sessionNavigation.getSessionsForStory(story.id);
+        
+        // Calculate aggregated stats from all sessions
+        const totalMessagesCount = sessions.reduce((sum, session) => sum + session.messages.length, 0);
+        const totalPlayTime = sessions.reduce((sum, session) => sum + session.totalPlayTime, 0);
+        const totalChoices = sessions.reduce((sum, session) => sum + session.choiceCount, 0);
+        const totalMemories = sessions.reduce((sum, session) => sum + session.memories.length, 0);
+        
+        // Find the most recent session
+        const mostRecentSession = sessions.length > 0 
+          ? sessions.reduce((latest, session) => 
+              new Date(session.lastPlayedAt) > new Date(latest.lastPlayedAt) ? session : latest
+            )
+          : undefined;
 
-        if (hasSession) {
-          const savedMessages = await loadSession(story.id);
-          if (savedMessages) {
-            messagesCount = savedMessages.length;
-            const lastMessage = savedMessages[savedMessages.length - 1];
-            lastPlayedDate = lastMessage?.timestamp;
-          }
+        const lastPlayedDate = mostRecentSession?.lastPlayedAt;
 
-          // Try to get last played date from AsyncStorage as well
-          try {
-            const lastOpened = await AsyncStorage.getItem(`lastPlayed_${story.id}`);
-            if (lastOpened) {
-              lastPlayedDate = lastOpened;
-            }
-          } catch (error) {
-            console.log('No last played date found for', story.id);
-          }
+        // Calculate completion percentage based on sessions
+        let completionPercentage = 0;
+        if (sessions.length > 0) {
+          const completedSessions = sessions.filter(s => s.isCompleted).length;
+          const maxProgress = Math.max(...sessions.map(s => sessionNavigation.getSessionProgress(s)));
+          completionPercentage = completedSessions > 0 ? 100 : maxProgress;
         }
 
-        // Calculate completion percentage (simplified - based on message count)
-        const completionPercentage = Math.min((messagesCount / 20) * 100, 100);
-
         // Calculate badges for this story
-        const badges = calculateBadgesForStory(story.id, messagesCount, hasSession, progresses);
+        const badges = calculateBadgesForStory(
+          story.id, 
+          totalMessagesCount, 
+          sessions, 
+          progresses,
+          totalPlayTime,
+          totalChoices,
+          totalMemories
+        );
 
         progresses.push({
           storyId: story.id,
-          messagesCount,
+          sessions,
+          totalMessagesCount,
           lastPlayedDate,
           completionPercentage,
-          currentScene,
+          currentScene: mostRecentSession?.currentSceneId,
           badges,
+          totalPlayTime,
+          mostRecentSession,
         });
       }
 
@@ -149,7 +186,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
       
       // Calculate overall badge statistics
       const allBadges = progresses.flatMap((p) => p.badges);
-      const totalBadgeCount = calculateTotalPossibleBadges();
+      const totalBadgeCount = BADGE_DEFINITIONS.length * stories.length;
       const earnedBadgeCount = allBadges.filter((b) => b.earned).length;
       
       setTotalBadges(totalBadgeCount);
@@ -162,31 +199,47 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     }
   };
 
-  const calculateBadgesForStory = (storyId: string, messagesCount: number, hasSession: boolean, currentProgresses: StoryProgress[]): Badge[] => {
+  const calculateBadgesForStory = (
+    storyId: string, 
+    totalMessages: number, 
+    sessions: StorySession[], 
+    currentProgresses: StoryProgress[],
+    totalPlayTime: number,
+    totalChoices: number,
+    totalMemories: number
+  ): Badge[] => {
     return BADGE_DEFINITIONS.map((badgeDefinition) => {
       let earned = false;
       
       switch (badgeDefinition.id) {
         case 'first_message':
-          earned = messagesCount > 0;
+          earned = totalMessages > 0;
           break;
         case 'chatty':
-          earned = messagesCount >= 50;
+          earned = totalMessages >= 50;
           break;
         case 'marathon':
-          earned = messagesCount >= 100;
+          earned = totalMessages >= 100;
           break;
         case 'story_starter':
-          earned = hasSession;
+          earned = sessions.length > 0;
           break;
         case 'explorer':
-          // Check current progresses plus this story
-          const storiesStarted = currentProgresses.filter(p => p.messagesCount > 0).length + (messagesCount > 0 ? 1 : 0);
+          const storiesStarted = currentProgresses.filter(p => p.sessions.length > 0).length + (sessions.length > 0 ? 1 : 0);
           earned = storiesStarted >= 3;
           break;
         case 'dedicated':
-          // This would need day tracking - simplified for now
-          earned = messagesCount >= 30;
+          // 2+ hours in seconds
+          earned = totalPlayTime >= 7200;
+          break;
+        case 'completionist':
+          earned = sessions.some(s => s.isCompleted);
+          break;
+        case 'choice_master':
+          earned = totalChoices >= 50;
+          break;
+        case 'memory_keeper':
+          earned = totalMemories >= 10;
           break;
       }
 
@@ -198,26 +251,44 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     });
   };
 
-  const calculateTotalPossibleBadges = (): number => {
-    return BADGE_DEFINITIONS.length * stories.length;
-  };
-
   const getStoryById = (storyId: string): Story | undefined => {
     return stories.find((story) => story.id === storyId);
   };
 
-  const handleContinueStory = async (storyId: string) => {
-    const hasSession = await hasSavedSession(storyId);
-    if (hasSession) {
-      await AsyncStorage.setItem('lastOpenedSession', storyId);
-      navigation.navigate('Chat', { storyId, sceneId: 'chat', startNewSession: false });
-    } else {
-      Alert.alert('No saved session', 'Start a new story from the story selection screen.');
+  const handleContinueStory = async (progress: StoryProgress) => {
+    if (!progress.mostRecentSession) {
+      Alert.alert('No session found', 'Please start a new story session.');
+      return;
+    }
+
+    try {
+      // Use the session-aware navigation to resume
+      await sessionNavigation.resumeSession(progress.mostRecentSession.id);
+    } catch (error) {
+      console.error('Failed to continue story:', error);
+      Alert.alert('Error', 'Failed to continue story. Please try again.');
     }
   };
 
-  const handleStartNewStory = (storyId: string) => {
-    navigation.navigate('StoryScene', { storyId, isPrologue: true });
+  const handleStartNewStory = async (storyId: string) => {
+    try {
+      // Use the session-aware navigation to start new session
+      await sessionNavigation.startNewSession(storyId);
+    } catch (error) {
+      console.error('Failed to start new story:', error);
+      Alert.alert('Error', 'Failed to start new story. Please try again.');
+    }
+  };
+
+  const handleManageSessions = (progress: StoryProgress) => {
+    if (progress.sessions.length === 0) {
+      Alert.alert('No sessions', 'Start a story to manage sessions.');
+      return;
+    }
+
+    // Navigate to session selection for this story
+    const story = getStoryById(progress.storyId);
+    sessionNavigation.navigateToStory(progress.storyId, story?.title);
   };
 
   const formatLastPlayed = (dateString?: string): string => {
@@ -239,6 +310,20 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     } catch (error) {
       return 'Unknown';
     }
+  };
+
+  const formatPlayTime = (seconds: number): string => {
+    if (seconds < 60) return '< 1 min';
+    
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      const remainingMinutes = minutes % 60;
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    
+    return `${minutes}m`;
   };
 
   const renderProgressBar = (percentage: number) => (
@@ -286,6 +371,8 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     if (!story) return null;
 
     const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
+    const hasAnySessions = progress.sessions.length > 0;
+    const canContinue = progress.mostRecentSession && sessionNavigation.canResumeSession(progress.mostRecentSession);
 
     return (
       <View key={progress.storyId} style={commonStyles.storyCard}>
@@ -298,7 +385,10 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
           <View style={dashboardStyles.storyHeaderInfo}>
             <Text style={commonStyles.storyTitle}>{story.title}</Text>
             <Text style={dashboardStyles.storyMeta}>
-              {progress.messagesCount} messages • {formatLastPlayed(progress.lastPlayedDate)}
+              {progress.sessions.length} session{progress.sessions.length !== 1 ? 's' : ''} • {progress.totalMessagesCount} messages
+            </Text>
+            <Text style={dashboardStyles.storyMeta}>
+              {formatPlayTime(progress.totalPlayTime)} played • {formatLastPlayed(progress.lastPlayedDate)}
             </Text>
             {renderProgressBar(progress.completionPercentage)}
           </View>
@@ -312,12 +402,19 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
         </View>
 
         <View style={[commonStyles.flexRow, commonStyles.spaceBetween]}>
-          {progress.messagesCount > 0 ? (
+          {canContinue ? (
             <TouchableOpacity
               style={[commonStyles.buttonSuccess, dashboardStyles.actionButton]}
-              onPress={() => handleContinueStory(progress.storyId)}
+              onPress={() => handleContinueStory(progress)}
             >
               <Text style={commonStyles.buttonText}>Continue Story</Text>
+            </TouchableOpacity>
+          ) : hasAnySessions ? (
+            <TouchableOpacity
+              style={[commonStyles.buttonPrimary, dashboardStyles.actionButton]}
+              onPress={() => handleManageSessions(progress)}
+            >
+              <Text style={commonStyles.buttonText}>Manage Sessions</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -332,7 +429,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
             style={[commonStyles.buttonOutline, dashboardStyles.actionButton]}
             onPress={() => handleStartNewStory(progress.storyId)}
           >
-            <Text style={commonStyles.buttonTextOutline}>New Game</Text>
+            <Text style={commonStyles.buttonTextOutline}>New Session</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -342,6 +439,9 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   const overallProgress = storyProgresses.length > 0 
     ? storyProgresses.reduce((sum, p) => sum + p.completionPercentage, 0) / storyProgresses.length 
     : 0;
+
+  const totalPlayTime = storyProgresses.reduce((sum, p) => sum + p.totalPlayTime, 0);
+  const totalSessions = storyProgresses.reduce((sum, p) => sum + p.sessions.length, 0);
 
   if (loading) {
     return (
@@ -369,18 +469,35 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
           
           <View style={dashboardStyles.statsRow}>
             <View style={dashboardStyles.statItem}>
-              <Text style={dashboardStyles.statNumber}>{storyProgresses.filter(p => p.messagesCount > 0).length}</Text>
+              <Text style={dashboardStyles.statNumber}>{storyProgresses.filter(p => p.sessions.length > 0).length}</Text>
               <Text style={dashboardStyles.statLabel}>Stories Started</Text>
+            </View>
+            <View style={dashboardStyles.statItem}>
+              <Text style={dashboardStyles.statNumber}>{totalSessions}</Text>
+              <Text style={dashboardStyles.statLabel}>Total Sessions</Text>
             </View>
             <View style={dashboardStyles.statItem}>
               <Text style={dashboardStyles.statNumber}>{earnedBadges}</Text>
               <Text style={dashboardStyles.statLabel}>Badges Earned</Text>
             </View>
+          </View>
+          
+          <View style={dashboardStyles.statsRow}>
             <View style={dashboardStyles.statItem}>
               <Text style={dashboardStyles.statNumber}>
-                {storyProgresses.reduce((sum, p) => sum + p.messagesCount, 0)}
+                {storyProgresses.reduce((sum, p) => sum + p.totalMessagesCount, 0)}
               </Text>
               <Text style={dashboardStyles.statLabel}>Total Messages</Text>
+            </View>
+            <View style={dashboardStyles.statItem}>
+              <Text style={dashboardStyles.statNumber}>{formatPlayTime(totalPlayTime)}</Text>
+              <Text style={dashboardStyles.statLabel}>Time Played</Text>
+            </View>
+            <View style={dashboardStyles.statItem}>
+              <Text style={dashboardStyles.statNumber}>
+                {storyProgresses.reduce((sum, p) => sum + p.sessions.reduce((s, session) => s + session.choiceCount, 0), 0)}
+              </Text>
+              <Text style={dashboardStyles.statLabel}>Choices Made</Text>
             </View>
           </View>
         </View>
@@ -392,7 +509,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
             {storyProgresses
               .flatMap(p => p.badges)
               .filter(b => b.earned)
-              .slice(0, 5)
+              .slice(0, 6)
               .map((badge, index) => (
                 <View key={`${badge.id}-${index}`} style={dashboardStyles.achievementItem}>
                   {renderBadge(badge, 'medium')}
@@ -408,10 +525,17 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
         {/* Navigation Actions */}
         <View style={dashboardStyles.navigationActions}>
           <TouchableOpacity
-            style={commonStyles.buttonPrimary}
-            onPress={() => navigation.navigate('StorySelection')}
+            style={[commonStyles.buttonPrimary, { marginBottom: spacing.md }]}
+            onPress={() => sessionNavigation.navigateToStorySelection()}
           >
             <Text style={commonStyles.buttonText}>Browse All Stories</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={commonStyles.buttonOutline}
+            onPress={() => sessionNavigation.navigateToSaveManager()}
+          >
+            <Text style={commonStyles.buttonTextOutline}>Manage Save Data</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -419,7 +543,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   );
 };
 
-// Dashboard-specific styles (reduced, using more common styles)
+// Dashboard-specific styles (same as before, but with some additions)
 const dashboardStyles = {
   progressBarContainer: {
     flexDirection: 'row' as const,
@@ -485,7 +609,7 @@ const dashboardStyles = {
   storyMeta: {
     fontSize: fontSizes.small,
     color: colors.darkGray,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   badgeSection: {
     marginBottom: spacing.lg,
