@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation';
 import { stories } from '../../data/stories/index';
 import { Story } from '../../types/index';
-import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
+import { useSessionAwareNavigation } from '../../contexts/SessionNavigationContext'; // Changed this import
 import { StorySession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { commonStyles, colors, fontSizes, spacing, borderRadius } from '../../styles';
@@ -118,8 +118,8 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
   const [earnedBadges, setEarnedBadges] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Use the new session navigation context
-  const sessionNavigation = useSessionNavigation();
+  // Use the session-aware navigation hook instead
+  const sessionNavigation = useSessionAwareNavigation();
 
   const screenWidth = Dimensions.get('window').width;
 
