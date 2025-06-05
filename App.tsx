@@ -1,14 +1,16 @@
-import * as React from 'react';
-import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Navigation from './src/navigation'; // Ensure path is correct
+import { SessionNavigationProvider } from './src/contexts/SessionNavigationContext';
+import Navigation from './src/navigation';
 
-export default function App() {
+const App = () => {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={DefaultTheme}>
+      <SessionNavigationProvider>
         <Navigation />
-      </PaperProvider>
+      </SessionNavigationProvider>
     </SafeAreaProvider>
   );
-}
+};
+
+export default App;

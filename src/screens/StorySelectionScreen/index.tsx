@@ -6,14 +6,14 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  ActivityIndicator, // Added for loading states
+  ActivityIndicator,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { stories as importedStories } from '../../data/stories/index'; // Renamed to avoid conflict
+import { stories as importedStories } from '../../data/stories/index';
 import { Story } from '../../types/index';
-import { clearSession, clearLastOpenedSession, hasSavedSession } from '../../data/sessionstorage';
+import { storySessionManager, StorySession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { commonStyles } from '../../styles';
@@ -22,29 +22,47 @@ type StorySelectionScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
 };
 
-// Extend Story type to include session status
-type StoryWithSessionStatus = Story & { hasSession: boolean };
+// Extended Story type to include session information
+type StoryWithSessionInfo = Story & { 
+  hasSession: boolean;
+  latestSession?: StorySession;
+  sessionCount: number;
+};
 
 const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation }) => {
-  const [stories, setStories] = useState<StoryWithSessionStatus[]>([]);
+  const [stories, setStories] = useState<StoryWithSessionInfo[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-  const [isProcessingStoryAction, setIsProcessingStoryAction] = useState<string | null>(null); // Store storyId being processed
+  const [isProcessingStoryAction, setIsProcessingStoryAction] = useState<string | null>(null);
 
   const loadStorySessionStates = useCallback(async () => {
     setIsLoadingSessions(true);
     try {
+      // Initialize the session manager if not already done
+      await storySessionManager.initialize();
+
       const storiesWithStates = await Promise.all(
         importedStories.map(async (story) => {
-          const sessionExists = await hasSavedSession(story.id);
-          return { ...story, hasSession: sessionExists };
+          const sessions = storySessionManager.getSessionsForStory(story.id);
+          const latestSession = sessions.length > 0 ? sessions[0] : undefined; // Sessions are sorted by lastPlayedAt
+
+          return {
+            ...story,
+            hasSession: sessions.length > 0,
+            latestSession,
+            sessionCount: sessions.length,
+          };
         })
       );
       setStories(storiesWithStates);
     } catch (error) {
       console.error("Error loading story session states:", error);
       Alert.alert("Error", "Could not load story information. Please try again later.");
-      // Set stories without session status or empty if preferred
-      setStories(importedStories.map(story => ({ ...story, hasSession: false })));
+      // Fallback to stories without session info
+      setStories(importedStories.map(story => ({ 
+        ...story, 
+        hasSession: false, 
+        sessionCount: 0 
+      })));
     } finally {
       setIsLoadingSessions(false);
     }
@@ -60,10 +78,17 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   const handleStartStory = async (storyId: string) => {
     setIsProcessingStoryAction(storyId);
     try {
-      await clearSession(storyId);
-      await clearLastOpenedSession();
-      await AsyncStorage.setItem('lastOpenedSession', storyId);
-      navigation.navigate('StoryScene', { storyId, isPrologue: true });
+      // Create a new session
+      const sessionId = await storySessionManager.createSession(storyId);
+      
+      // Store the session ID for navigation
+      await AsyncStorage.setItem('lastOpenedSession', sessionId);
+      
+      navigation.navigate('StoryScene', { 
+        storyId, 
+        sessionId, // Pass the session ID
+        isPrologue: true 
+      });
     } catch (error) {
       console.error('Error starting new story:', error);
       Alert.alert('Error', 'Could not start the story. Please try again.');
@@ -74,12 +99,38 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     }
   };
 
-  const handleContinueStoryById = async (storyId: string) => {
-    setIsProcessingStoryAction(storyId);
+  const handleContinueStory = async (story: StoryWithSessionInfo) => {
+    if (!story.latestSession) {
+      Alert.alert('Error', 'No saved session found for this story.');
+      return;
+    }
+
+    setIsProcessingStoryAction(story.id);
     try {
-      // We already know the session exists if this button is available and pressed
-      await AsyncStorage.setItem('lastOpenedSession', storyId);
-      navigation.navigate('Chat', { storyId, sceneId: 'chat', startNewSession: false });
+      // Update the session's last played time
+      await storySessionManager.updateSession(story.latestSession.id, {
+        lastPlayedAt: new Date().toISOString()
+      });
+
+      // Store the session ID for navigation
+      await AsyncStorage.setItem('lastOpenedSession', story.latestSession.id);
+      
+      // Navigate to the appropriate screen based on the current scene
+      if (story.latestSession.currentSceneId === 'chat') {
+        navigation.navigate('Chat', {
+          storyId: story.id,
+          sessionId: story.latestSession.id,
+          sceneId: story.latestSession.currentSceneId,
+          // resumeFromCheckpoint or other Chat params if needed
+        });
+      } else {
+        navigation.navigate('StoryScene', {
+          storyId: story.id,
+          sessionId: story.latestSession.id,
+          sceneId: story.latestSession.currentSceneId,
+          // isPrologue or other StoryScene params if needed
+        });
+      }
     } catch (error) {
       console.error('Error continuing story:', error);
       Alert.alert('Error', 'Could not continue the story. Please try again.');
@@ -92,77 +143,104 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     navigation.navigate('StoryDashboard');
   };
 
- const renderStoryItem = ({ item }: { item: StoryWithSessionStatus }) => {
-  const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
-  const isCurrentStoryProcessing = isProcessingStoryAction === item.id;
+  const handleShowSessionOptions = (story: StoryWithSessionInfo) => {
+    if (story.sessionCount <= 1) {
+      // If only one session, continue directly
+      handleContinueStory(story);
+      return;
+    }
 
-  return (
-    <View style={commonStyles.storyCard}>
-      <Image
-        source={imageSource}
-        style={commonStyles.storyImage}
-        resizeMode="cover"
-        // Optional: Add ActivityIndicator for image loading if needed
-        // onLoanStart, onLoadEnd
-      />
-      <View style={commonStyles.storyDetails}>
-        <Text style={commonStyles.storyTitle}>{item.title}</Text>
-        <Text style={commonStyles.storyDescription}>{item.description}</Text>
-        <View style={commonStyles.storyMeta}>
-          <Text style={commonStyles.storyMetaText}>Duration: {item.duration}</Text>
-          <Text style={commonStyles.storyMetaText}>Theme: {item.theme}</Text>
-        </View>
+    // Show alert with session options
+    Alert.alert(
+      'Multiple Sessions Found',
+      `You have ${story.sessionCount} saved sessions for "${story.title}". What would you like to do?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Continue Latest', 
+          onPress: () => handleContinueStory(story) 
+        },
+        { 
+          text: 'View All Sessions', 
+          onPress: () => navigation.navigate('SessionSelection', { storyId: story.id }) 
+        }
+      ]
+    );
+  };
 
-        {item.hasSession && (
+  const renderStoryItem = ({ item }: { item: StoryWithSessionInfo }) => {
+    const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
+    const isCurrentStoryProcessing = isProcessingStoryAction === item.id;
+
+    return (
+      <View style={commonStyles.storyCard}>
+        <Image
+          source={imageSource}
+          style={commonStyles.storyImage}
+          resizeMode="cover"
+        />
+        <View style={commonStyles.storyDetails}>
+          <Text style={commonStyles.storyTitle}>{item.title}</Text>
+          <Text style={commonStyles.storyDescription}>{item.description}</Text>
+          <View style={commonStyles.storyMeta}>
+            <Text style={commonStyles.storyMetaText}>Duration: {item.duration}</Text>
+            <Text style={commonStyles.storyMetaText}>Theme: {item.theme}</Text>
+            {item.hasSession && (
+              <Text style={commonStyles.storyMetaText}>
+                {item.sessionCount} saved session{item.sessionCount > 1 ? 's' : ''}
+              </Text>
+            )}
+          </View>
+
+          {item.hasSession && (
+            <TouchableOpacity
+              style={[
+                commonStyles.buttonSuccess,
+                isCurrentStoryProcessing && commonStyles.buttonDisabled,
+                { marginBottom: 12 }
+              ]}
+              onPress={() => handleShowSessionOptions(item)}
+              disabled={isCurrentStoryProcessing}
+            >
+              {isCurrentStoryProcessing ? (
+                <ActivityIndicator color={commonStyles.buttonText?.color || "#fff"} />
+              ) : (
+                <Text style={commonStyles.buttonText}>
+                  {item.sessionCount > 1 ? 'Continue Story...' : 'Continue Story'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={[
-              commonStyles.buttonSuccess, // Primary action if session exists
-              isCurrentStoryProcessing && commonStyles.buttonDisabled,
-              // Add a margin-bottom here to create the gap
-              // We'll define 'buttonGap' in commonStyles
-              { marginBottom: 12 }
+              item.hasSession ? commonStyles.buttonSecondary : commonStyles.buttonPrimary,
+              isCurrentStoryProcessing && commonStyles.buttonDisabled
             ]}
-            onPress={() => handleContinueStoryById(item.id)}
+            onPress={() => handleStartStory(item.id)}
             disabled={isCurrentStoryProcessing}
           >
-            {isCurrentStoryProcessing ? (
+            {isCurrentStoryProcessing && !item.hasSession ? (
               <ActivityIndicator color={commonStyles.buttonText?.color || "#fff"} />
             ) : (
-              <Text style={commonStyles.buttonText}>Continue Story</Text>
+              <Text style={commonStyles.buttonText}>
+                {item.hasSession ? 'New Story' : 'Start Story'}
+              </Text>
             )}
           </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          // Style differently if it's "Restart" vs "Start" e.g. commonStyles.buttonOutline
-          style={[
-            item.hasSession ? commonStyles.buttonSecondary : commonStyles.buttonPrimary,
-            isCurrentStoryProcessing && commonStyles.buttonDisabled
-          ]}
-          onPress={() => handleStartStory(item.id)}
-          disabled={isCurrentStoryProcessing}
-        >
-          {isCurrentStoryProcessing && !item.hasSession ? ( // Show loader only if this is the action being processed
-            <ActivityIndicator color={commonStyles.buttonText?.color || "#fff"} />
-          ) : (
-            <Text style={commonStyles.buttonText}>
-              {item.hasSession ? 'Restart Story' : 'Start Story'}
-            </Text>
-          )}
-        </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
-if (isLoadingSessions && !stories.length) { // Show full screen loader only on initial load
-  return (
-    <SafeAreaView style={[commonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-      <ActivityIndicator size="large" color={commonStyles.sectionTitle?.color || "#000"} />
-      <Text style={{ marginTop: 10 }}>Loading stories...</Text>
-    </SafeAreaView>
-  );
-}
+  if (isLoadingSessions && !stories.length) {
+    return (
+      <SafeAreaView style={[commonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={commonStyles.sectionTitle?.color || "#000"} />
+        <Text style={{ marginTop: 10 }}>Loading stories...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: commonStyles.container?.backgroundColor || '#fff' }}>
@@ -172,15 +250,15 @@ if (isLoadingSessions && !stories.length) { // Show full screen loader only on i
         </Text>
 
         <TouchableOpacity
-          style={[commonStyles.buttonSecondary, { marginBottom: 16 }]} // Assuming buttonSecondary is defined
+          style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
           onPress={handleViewDashboard}
         >
           <Text style={commonStyles.buttonText}>View Your Progress</Text>
         </TouchableOpacity>
 
         <Text style={commonStyles.sectionTitle}>Available Stories</Text>
-        {isLoadingSessions && stories.length > 0 && ( // Inline loader when refreshing
-            <ActivityIndicator size="small" color={commonStyles.sectionTitle?.color || "#000"} style={{marginVertical: 10}}/>
+        {isLoadingSessions && stories.length > 0 && (
+          <ActivityIndicator size="small" color={commonStyles.sectionTitle?.color || "#000"} style={{marginVertical: 10}}/>
         )}
         <FlatList
           data={stories}
@@ -188,8 +266,8 @@ if (isLoadingSessions && !stories.length) { // Show full screen loader only on i
           keyExtractor={item => item.id}
           contentContainerStyle={stories.length === 0 ? commonStyles.listContainer : { paddingBottom: 20 }}
           ListEmptyComponent={
-            !isLoadingSessions ? ( // Only show empty component if not loading
-              <View style={commonStyles.emptyListContainer}> {/* Define in commonStyles */}
+            !isLoadingSessions ? (
+              <View style={commonStyles.emptyListContainer}>
                 <Text style={commonStyles.emptyListText}>No stories available at the moment.</Text>
               </View>
             ) : null

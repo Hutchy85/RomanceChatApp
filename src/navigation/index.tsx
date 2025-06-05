@@ -7,24 +7,54 @@ import StorySelectionScreen from '../screens/StorySelectionScreen';
 import StorySceneScreen from '../screens/StorySceneScreen';
 import ChatScreen from '../screens/ChatScreen';
 import StoryDashboardScreen from '../screens/StoryDashboardScreen';
+import SessionSelectionScreen from '../screens/SessionSelectionScreen';
+
+// Import session types
+import { StorySession } from '../data/sessionstorage';
 
 // Define the navigation parameters
 export type RootStackParamList = {
   StorySelection: undefined;
-  StoryScene: { storyId: string; sceneId?: string; isPrologue?: boolean };
-  Chat: { storyId: string; sceneId: string; startNewSession?: boolean };
   StoryDashboard: undefined;
+  
+  // Session management screens
+  SessionSelection: { 
+    storyId: string; 
+    storyTitle?: string;
+  };
+  
+  // Story screens with session context
+  StoryScene: { 
+    storyId: string; 
+    sessionId: string;
+    sceneId?: string; 
+    isPrologue?: boolean;
+  };
+  Chat: { 
+    storyId: string; 
+    sessionId: string;
+    sceneId: string; 
+    resumeFromCheckpoint?: boolean;
+  };
+  
+  // Session management screens
+  SessionDetails: {
+    sessionId: string;
+    storyId: string;
+  };
+  SaveManager: undefined; // For managing saves, exports, imports
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const Navigation = () => {
   return (
-  <NavigationContainer
-    onStateChange={(state) => {
-      console.log('Current state:', state);
-    }}
-  >
+    <NavigationContainer
+      onStateChange={(state) => {
+        console.log('Current navigation state:', state);
+        // You could add session tracking here if needed
+      }}
+    >
       <Stack.Navigator
         initialRouteName="StorySelection"
         screenOptions={{
@@ -35,37 +65,66 @@ const Navigation = () => {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          // Add consistent session-aware styling
+          headerBackTitleStyle: {
+            fontSize: 16,
+          },
         }}
       >
+        {/* Main story selection */}
         <Stack.Screen 
           name="StorySelection" 
           component={StorySelectionScreen} 
-          options={{ title: 'Romance Chat Stories' }}
-        />
-        <Stack.Screen 
-          name="StoryScene" 
-          component={StorySceneScreen} 
-          options={({ route }) => ({ 
-            title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
-            headerBackTitle: 'Back'
-          })}
-        />
-        <Stack.Screen
-          name="Chat"
-          component={ChatScreen}
-          options={{
-            title: 'Chat',
-            headerBackTitle: 'Exit',
-            headerLeft: () => null,
+          options={{ 
+            title: 'Romance Chat Stories',
+            headerRight: () => (
+              // You could add a button to navigate to StoryDashboard here
+              null
+            ),
           }}
         />
+        
+        {/* Story progress dashboard */}
         <Stack.Screen
           name="StoryDashboard"
           component={StoryDashboardScreen}
           options={{
             title: 'Your Progress',
-            headerBackTitle: 'Back',
+            headerBackTitle: 'Stories',
           }}
+        />
+
+        {/* Session selection - choose existing session or create new */}
+        <Stack.Screen
+          name="SessionSelection"
+          component={SessionSelectionScreen}
+          options={({ route }) => ({
+            title: route.params.storyTitle || 'Select Session',
+            headerBackTitle: 'Stories',
+          })}
+        />
+
+        {/* Story scene with session context */}
+        <Stack.Screen 
+          name="StoryScene" 
+          component={StorySceneScreen} 
+          options={({ route }) => ({ 
+            title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
+            headerBackTitle: 'Sessions',
+            // Pass session context to the screen
+          })}
+        />
+
+        {/* Chat screen with session management */}
+        <Stack.Screen
+          name="Chat"
+          component={ChatScreen}
+          options={({ route }) => ({
+            title: 'Chat',
+            headerBackTitle: 'Story',
+            headerLeft: () => null, // Prevent accidental navigation away
+            // You might want to add a save/pause button in headerRight
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>
