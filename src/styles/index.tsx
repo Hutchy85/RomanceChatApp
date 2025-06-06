@@ -188,7 +188,7 @@ export const commonStyles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
-    marginTop: spacing.md,
+    marginBottom: spacing.md,
   },
   buttonOutline: {
     backgroundColor: colors.transparent,

@@ -6,6 +6,7 @@ export interface PlayerChoice {
   choiceText: string;
   timestamp: string;
   consequences?: string[]; // Tags for what this choice affected
+  effects?: Partial<CharacterStats>; // direct stat effects
 }
 
 export interface CharacterStats {
@@ -288,27 +289,39 @@ export class StorySessionManager {
 
   // Record a player choice
   async recordChoice(sessionId: string, choice: Omit<PlayerChoice, 'timestamp'>): Promise<void> {
-    const session = this.getSession(sessionId);
-    if (!session) {
-      throw new AppError(`Session ${sessionId} not found`, ErrorType.VALIDATION);
-    }
-
-    const fullChoice: PlayerChoice = {
-      ...choice,
-      timestamp: new Date().toISOString(),
-    };
-
-    session.choices.push(fullChoice);
-    session.choiceCount++;
-    session.lastPlayedAt = new Date().toISOString();
-
-    // Add scene to visited list if not already there
-    if (!session.scenesVisited.includes(choice.sceneId)) {
-      session.scenesVisited.push(choice.sceneId);
-    }
-
-    await this.saveGameSave();
+  const session = this.getSession(sessionId);
+  if (!session) {
+    throw new AppError(`Session ${sessionId} not found`, ErrorType.VALIDATION);
   }
+
+  const fullChoice: PlayerChoice = {
+    ...choice,
+    timestamp: new Date().toISOString(),
+  };
+
+  session.choices.push(fullChoice);
+  session.choiceCount++;
+  session.lastPlayedAt = new Date().toISOString();
+
+  // Apply character stat effects if present
+  if (choice.effects) {
+    Object.entries(choice.effects).forEach(([key, value]) => {
+      if (typeof value === 'number') {
+        session.characterStats[key] = (session.characterStats[key] as number) + value;
+      } else if (typeof value === 'string') {
+        session.characterStats[key] = value;
+      }
+    });
+  }
+
+  // Add scene to visited list if not already there
+  if (!session.scenesVisited.includes(choice.sceneId)) {
+    session.scenesVisited.push(choice.sceneId);
+  }
+
+  await this.saveGameSave();
+}
+
 
   // Record a story memory/event
   async recordMemory(sessionId: string, memory: Omit<StoryMemory, 'timestamp'>): Promise<void> {
