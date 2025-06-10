@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import * as Progress from 'react-native-progress';
 import { useSessionNavigation } from '../contexts/SessionNavigationContext';
+
 
 const RelationshipStatusBar = () => {
   const { currentSession } = useSessionNavigation();
@@ -17,11 +19,25 @@ const RelationshipStatusBar = () => {
     <View style={styles.container}>
       <View style={styles.statBlock}>
         <Text style={styles.label}>❤️ Affection</Text>
-        <Text style={styles.value}>{affection}</Text>
+        <Progress.Bar 
+          progress={affection / 100} 
+          width={120} 
+          color="#ff6384"
+          unfilledColor="#333"
+          borderWidth={0}
+          height={10}
+        />
       </View>
       <View style={styles.statBlock}>
         <Text style={styles.label}>🤝 Trust</Text>
-        <Text style={styles.value}>{trust}</Text>
+        <Progress.Bar 
+          progress={trust / 100} 
+          width={120} 
+          color="#4bc0c0"
+          unfilledColor="#333"
+          borderWidth={0}
+          height={10}
+        />
       </View>
     </View>
   );
