@@ -1,14 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SessionNavigationContext } from '../contexts/SessionNavigationContext';
+import { useSessionNavigation } from '../contexts/SessionNavigationContext';
 
 const RelationshipStatusBar = () => {
-  const { sessionState } = useContext(SessionNavigationContext);
-  const { characterStats } = sessionState;
+  const { currentSession } = useSessionNavigation();
+  
+  // Early return if no session or no character stats
+  if (!currentSession?.characterStats) return null;
 
-  if (!characterStats) return null;
+  const { affection, trust } = currentSession.characterStats;
 
-  const { affection, trust } = characterStats;
+  // Don't render if stats are undefined or null
+  if (affection === undefined || trust === undefined) return null;
 
   return (
     <View style={styles.container}>
