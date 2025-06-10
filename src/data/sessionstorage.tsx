@@ -1,4 +1,6 @@
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppError, ErrorType, getErrorMessage } from '../utils/errorHandling';
+import { CharacterStats, DEFAULT_CHARACTER_STATS } from '../types';
 
 // Enhanced TypeScript types for the save system
 export interface PlayerChoice {
@@ -9,14 +11,6 @@ export interface PlayerChoice {
   timestamp: string;
   consequences?: string[]; // Tags for what this choice affected
   effects?: Partial<CharacterStats>; // direct stat effects
-}
-
-export interface CharacterStats {
-  affection: number;
-  trust: number;
-  mood: 'happy' | 'neutral' | 'sad' | 'angry' | 'romantic';
-  relationship_level: number;
-  [key: string]: number | string; // Allow custom stats
 }
 
 export interface StoryMemory {
@@ -97,9 +91,6 @@ export interface Message {
 }
 
 // Enhanced save/load service
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppError, ErrorType, getErrorMessage } from '../utils/errorHandling';
-
 export class StorySessionManager {
   private static readonly SAVE_KEY = 'story_game_save';
   private static readonly BACKUP_KEY = 'story_game_save_backup';
@@ -233,12 +224,7 @@ export class StorySessionManager {
       startedAt: new Date().toISOString(),
       lastPlayedAt: new Date().toISOString(),
       isCompleted: false,
-      characterStats: {
-        affection: 0,
-        trust: 0,
-        mood: 'neutral',
-        relationship_level: 1,
-      },
+      characterStats: { ...DEFAULT_CHARACTER_STATS },
       storyFlags: {},
       customVariables: characterName ? { characterName } : {},
       choices: [],
@@ -291,39 +277,38 @@ export class StorySessionManager {
 
   // Record a player choice
   async recordChoice(sessionId: string, choice: Omit<PlayerChoice, 'timestamp'>): Promise<void> {
-  const session = this.getSession(sessionId);
-  if (!session) {
-    throw new AppError(`Session ${sessionId} not found`, ErrorType.VALIDATION);
+    const session = this.getSession(sessionId);
+    if (!session) {
+      throw new AppError(`Session ${sessionId} not found`, ErrorType.VALIDATION);
+    }
+
+    const fullChoice: PlayerChoice = {
+      ...choice,
+      timestamp: new Date().toISOString(),
+    };
+
+    session.choices.push(fullChoice);
+    session.choiceCount++;
+    session.lastPlayedAt = new Date().toISOString();
+
+    // Apply character stat effects if present
+    if (choice.effects) {
+      Object.entries(choice.effects).forEach(([key, value]) => {
+        if (typeof value === 'number' && typeof session.characterStats[key] === 'number') {
+          (session.characterStats[key] as number) += value;
+        } else if (typeof value === 'string') {
+          session.characterStats[key] = value;
+        }
+      });
+    }
+
+    // Add scene to visited list if not already there
+    if (!session.scenesVisited.includes(choice.sceneId)) {
+      session.scenesVisited.push(choice.sceneId);
+    }
+
+    await this.saveGameSave();
   }
-
-  const fullChoice: PlayerChoice = {
-    ...choice,
-    timestamp: new Date().toISOString(),
-  };
-
-  session.choices.push(fullChoice);
-  session.choiceCount++;
-  session.lastPlayedAt = new Date().toISOString();
-
-  // Apply character stat effects if present
-  if (choice.effects) {
-    Object.entries(choice.effects).forEach(([key, value]) => {
-      if (typeof value === 'number') {
-        session.characterStats[key] = (session.characterStats[key] as number) + value;
-      } else if (typeof value === 'string') {
-        session.characterStats[key] = value;
-      }
-    });
-  }
-
-  // Add scene to visited list if not already there
-  if (!session.scenesVisited.includes(choice.sceneId)) {
-    session.scenesVisited.push(choice.sceneId);
-  }
-
-  await this.saveGameSave();
-}
-
 
   // Record a story memory/event
   async recordMemory(sessionId: string, memory: Omit<StoryMemory, 'timestamp'>): Promise<void> {
@@ -441,3 +426,6 @@ export class StorySessionManager {
 
 // Singleton instance for easy access throughout your app
 export const storySessionManager = new StorySessionManager();
+
+// Re-export the CharacterStats type for convenience
+export type { CharacterStats };

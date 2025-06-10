@@ -55,3 +55,20 @@ export interface SavedSession {
   date: string;
   messages?: Message[];
 }
+export interface CharacterStats {
+  affection: number;
+  trust: number;
+  mood?: 'happy' | 'neutral' | 'sad' | 'angry' | 'romantic';
+  relationship_level?: number;
+  respect?: number;
+  friendship?: number;
+  [key: string]: number | string | undefined; // Allow custom stats
+}
+
+// Default stats for new sessions
+export const DEFAULT_CHARACTER_STATS: CharacterStats = {
+  affection: 50,
+  trust: 50,
+  mood: 'neutral',
+  relationship_level: 1,
+};

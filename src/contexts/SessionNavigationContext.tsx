@@ -1,15 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { storySessionManager, StorySession } from '../data/sessionstorage';
 import { useNavigation } from '@react-navigation/native';
-
-// Add this interface for character stats
-interface CharacterStats {
-  affection: number;
-  trust: number;
-  // Add other stats as needed
-  respect?: number;
-  friendship?: number;
-}
+import { CharacterStats, DEFAULT_CHARACTER_STATS } from '../types';
 
 interface SessionNavigationContextType {
   currentSession: StorySession | null;
@@ -21,7 +13,7 @@ interface SessionNavigationContextType {
   updateCurrentSession: (updates: Partial<StorySession>) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   
-  // Character stats management - ADD THESE LINES
+  // Character stats management
   updateCharacterStats: (updates: Partial<CharacterStats>) => Promise<void>;
   initializeCharacterStats: (initialStats?: Partial<CharacterStats>) => Promise<void>;
   
@@ -76,10 +68,7 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
         setCurrentSession(newSession);
         
         // Initialize character stats for new session
-        await initializeCharacterStats({
-          affection: 50,
-          trust: 50,
-        });
+        await initializeCharacterStats(DEFAULT_CHARACTER_STATS);
       }
       
       return sessionId;
@@ -145,23 +134,20 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     }
   };
 
-  // ADD THESE NEW METHODS FOR CHARACTER STATS
-  
   // Initialize character stats with default values
   const initializeCharacterStats = async (initialStats: Partial<CharacterStats> = {}) => {
     if (!currentSession) {
       throw new Error('No current session to initialize stats for');
     }
 
-    const defaultStats: CharacterStats = {
-      affection: 50,
-      trust: 50,
+    const stats: CharacterStats = {
+      ...DEFAULT_CHARACTER_STATS,
       ...initialStats,
     };
 
     try {
       await updateCurrentSession({
-        characterStats: defaultStats,
+        characterStats: stats,
       });
     } catch (error) {
       const errorMessage = 'Failed to initialize character stats';
@@ -178,17 +164,17 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     }
 
     try {
-      const currentStats = currentSession.characterStats || { affection: 50, trust: 50 };
-      const updatedStats = {
+      const currentStats = currentSession.characterStats || DEFAULT_CHARACTER_STATS;
+      const updatedStats: CharacterStats = {
         ...currentStats,
         ...updates,
       };
 
-      // Clamp values between 0 and 100
+      // Clamp numeric values between 0 and 100
       Object.keys(updatedStats).forEach(key => {
-        const value = updatedStats[key as keyof CharacterStats];
+        const value = updatedStats[key];
         if (typeof value === 'number') {
-          updatedStats[key as keyof CharacterStats] = Math.max(0, Math.min(100, value));
+          updatedStats[key] = Math.max(0, Math.min(100, value));
         }
       });
 
@@ -254,11 +240,8 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     loadSession,
     updateCurrentSession,
     deleteSession,
-    
-    // ADD THESE TO THE CONTEXT VALUE
     updateCharacterStats,
     initializeCharacterStats,
-    
     isLoading,
     error,
     getSessionsForStory,
