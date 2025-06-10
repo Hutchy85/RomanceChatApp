@@ -15,6 +15,8 @@ import { storySessionManager } from '../../data/sessionstorage';
 import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
 import imageMap from '../../data/imageMap';
 import { colors, commonStyles } from '../../styles';
+import RelationshipStatusBar from '../../components/RelationshipStatusBar';
+
 
 type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
@@ -359,88 +361,91 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
-      <SafeAreaView style={commonStyles.safeAreaContainer}>
-        
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={commonStyles.messagesContent}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={10}
-          keyboardShouldPersistTaps="handled"
-        />
+    <>
+      <RelationshipStatusBar />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <SafeAreaView style={commonStyles.safeAreaContainer}>
+          
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessageItem}
+            keyExtractor={item => item.id}
+            contentContainerStyle={commonStyles.messagesContent}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            keyboardShouldPersistTaps="handled"
+          />
 
-        <View style={commonStyles.footerContainer}>
-          {isSending && (
-            <View style={commonStyles.typingContainer}>
-              <ActivityIndicator size="small" color={colors.secondary} />
-              <Text style={commonStyles.typingText}>Typing...</Text>
-            </View>
-          )}
+          <View style={commonStyles.footerContainer}>
+            {isSending && (
+              <View style={commonStyles.typingContainer}>
+                <ActivityIndicator size="small" color={colors.secondary} />
+                <Text style={commonStyles.typingText}>Typing...</Text>
+              </View>
+            )}
 
-          <View style={commonStyles.inputContainer}>
-            <TextInput
-              style={commonStyles.input}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Type your message..."
-              multiline
-              maxLength={500}
-              returnKeyType="send"
-              onSubmitEditing={handleSendMessage}
-              editable={!isSending}
-            />
-            <TouchableOpacity
-              style={[
-                commonStyles.buttonPrimary,
-                (!inputText.trim() || isSending) && commonStyles.buttonDisabled,
-              ]}
-              onPress={handleSendMessage}
-              disabled={!inputText.trim() || isSending}
-            >
-              <Text style={commonStyles.buttonText}>Send</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={commonStyles.buttonRow}>
-            <TouchableOpacity
-              style={commonStyles.buttonSecondary}
-              onPress={handleManualSave}
-              disabled={isSending}
-            >
-              <Text style={commonStyles.buttonText}>Save Progress</Text>
-            </TouchableOpacity>
-
-            {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
+            <View style={commonStyles.inputContainer}>
+              <TextInput
+                style={commonStyles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Type your message..."
+                multiline
+                maxLength={500}
+                returnKeyType="send"
+                onSubmitEditing={handleSendMessage}
+                editable={!isSending}
+              />
               <TouchableOpacity
-                style={commonStyles.buttonTertiary}
-                onPress={() => {
-                  const nextSceneId = currentScene.sceneTriggers?.[0]?.nextSceneIndex;
-                  if (nextSceneId) {
-                    navigation.navigate('StoryScene', { 
-                      storyId, 
-                      sessionId,
-                      sceneId: nextSceneId 
-                    });
-                  }
-                }}
+                style={[
+                  commonStyles.buttonPrimary,
+                  (!inputText.trim() || isSending) && commonStyles.buttonDisabled,
+                ]}
+                onPress={handleSendMessage}
+                disabled={!inputText.trim() || isSending}
+              >
+                <Text style={commonStyles.buttonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={commonStyles.buttonRow}>
+              <TouchableOpacity
+                style={commonStyles.buttonSecondary}
+                onPress={handleManualSave}
                 disabled={isSending}
               >
-                <Text style={commonStyles.buttonText}>Go to Next Scene</Text>
+                <Text style={commonStyles.buttonText}>Save Progress</Text>
               </TouchableOpacity>
-            )}
+
+              {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
+                <TouchableOpacity
+                  style={commonStyles.buttonTertiary}
+                  onPress={() => {
+                    const nextSceneId = currentScene.sceneTriggers?.[0]?.nextSceneIndex;
+                    if (nextSceneId) {
+                      navigation.navigate('StoryScene', { 
+                        storyId, 
+                        sessionId,
+                        sceneId: nextSceneId 
+                      });
+                    }
+                  }}
+                  disabled={isSending}
+                >
+                  <Text style={commonStyles.buttonText}>Go to Next Scene</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </>
   );
 };
 
