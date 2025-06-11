@@ -4,7 +4,7 @@
     "slug": "RomanceChatApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/images/AppLogo.png",
+    "icon": "./src/assets/images/AppLogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

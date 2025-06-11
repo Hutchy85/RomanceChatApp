@@ -17,6 +17,8 @@ import { storySessionManager, StorySession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { commonStyles } from '../../styles';
+import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
+
 
 type StorySelectionScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
@@ -69,11 +71,15 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   }, []);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      loadStorySessionStates();
-    });
-    return unsubscribe;
-  }, [navigation, loadStorySessionStates]);
+  const unsubscribe = navigation.addListener('focus', () => {
+    loadStorySessionStates();
+    playBackgroundMusic();
+  });
+
+  return () => {
+    unsubscribe();
+  };
+}, [navigation, loadStorySessionStates]);
 
   const handleStartStory = async (storyId: string) => {
     setIsProcessingStoryAction(storyId);
@@ -169,7 +175,7 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   };
 
   const renderStoryItem = ({ item }: { item: StoryWithSessionInfo }) => {
-    const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
+    const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../assets/images/defaultImage.png');
     const isCurrentStoryProcessing = isProcessingStoryAction === item.id;
 
     return (

@@ -370,7 +370,7 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     const story = getStoryById(progress.storyId);
     if (!story) return null;
 
-    const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../images/defaultImage.png');
+    const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../assets/images/defaultImage.png');
     const hasAnySessions = progress.sessions.length > 0;
     const canContinue = progress.mostRecentSession && sessionNavigation.canResumeSession(progress.mostRecentSession);
 

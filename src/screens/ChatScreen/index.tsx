@@ -16,7 +16,7 @@ import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
 import imageMap from '../../data/imageMap';
 import { colors, commonStyles } from '../../styles';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
-
+import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
 
 type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
@@ -42,7 +42,9 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   // Initialize chat session
   useEffect(() => {
     initializeChatSession();
+    stopBackgroundMusic();
   }, [storyId, sessionId, sceneId]);
+
 
   // Track play time when component unmounts or becomes inactive
   useEffect(() => {
@@ -253,6 +255,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const handleSendMessage = async () => {
     if (!inputText.trim() || isSending || !currentSession) return;
 
+    await playSoundEffect(require('../../assets/audio/message_send.mp3'));
+
     const userMessage = inputText.trim();
     addMessage(userMessage, 'user');
     chatHistory.current.push({ role: 'user', content: userMessage });
@@ -271,6 +275,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
       const aiReply = await getChatbotReply(chatHistory.current);
       chatHistory.current.push({ role: 'assistant', content: aiReply });
       addMessage(aiReply, 'assistant');
+
+      await playSoundEffect(require('../../assets/audio/message_receive.mp3'));
       
       // Check for triggers in the AI's reply
       await checkTriggers(aiReply);
