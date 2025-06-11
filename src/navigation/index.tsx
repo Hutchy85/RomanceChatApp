@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 
 // Import screens
 import StorySelectionScreen from '../screens/StorySelectionScreen';
@@ -69,6 +69,12 @@ const Navigation = () => {
           headerBackTitleStyle: {
             fontSize: 16,
           },
+          gestureEnabled: true,
+    cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+    transitionSpec: {
+      open: { animation: 'timing', config: { duration: 500 } },
+      close: { animation: 'timing', config: { duration: 500 } },
+    },
         }}
       >
         {/* Main story selection */}
