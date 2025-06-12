@@ -4,11 +4,12 @@ export type Message = {
   id: string;
   text?: string;
   image?: number;
-  type: 'user' | 'assistant' | 'system';
+  sender: string; // replaces 'type', dynamic character id e.g. 'wife', 'mike', 'user', 'system'
   timestamp: string;
-  name?: string;
-  avatar?: number;
+  name?: string; // optional override if you want to name in message-specific way
+  avatar?: number; // image reference id or URI for avatar
 };
+
 
 export interface ImageTrigger {
   keyword: string;

@@ -86,7 +86,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
           id: msg.id,
           text: msg.text,
           image: msg.image,
-          type: msg.type ?? 'assistant', // fallback if missing
+          sender: msg.type ?? 'assistant', // fallback if missing
           timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           name: msg.name,
           avatar: msg.avatar,
@@ -95,9 +95,9 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         
         // Rebuild chat history from saved messages
         const rebuiltHistory = transformedMessages
-          .filter(msg => msg.type !== 'system')
+          .filter(msg => msg.sender !== 'system')
           .map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
+            role: msg.sender === 'user' ? 'user' : 'assistant',
             content: msg.text || '',
           }));
           
@@ -164,19 +164,19 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   };
 
   // Memoized message creation function
-  const createMessage = useCallback((text: string, type: Message['type'], imageUrl?: number): Message => {
+  const createMessage = useCallback((text: string, type: Message['sender'], imageUrl?: number): Message => {
     return {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       text: imageUrl ? undefined : text,
       image: imageUrl,
-      type,
+      sender: type,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       name: type === 'user' ? 'You' : currentScene?.characterName,
       avatar: type === 'user' ? imageMap.userAvatar : imageMap.assistantAvatar,
     };
   }, [currentScene]);
 
-  const addMessage = useCallback((text: string, type: Message['type']) => {
+  const addMessage = useCallback((text: string, type: Message['sender']) => {
     const newMessage = createMessage(text, type);
     setMessages(prevMessages => {
       const updatedMessages = [...prevMessages, newMessage];
@@ -188,7 +188,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     scrollToEnd();
   }, [createMessage]);
 
-  const addImageMessage = useCallback((imageUrl: number, type: Message['type']) => {
+  const addImageMessage = useCallback((imageUrl: number, type: Message['sender']) => {
     const newMessage = createMessage('', type, imageUrl);
     setMessages(prevMessages => {
       const updatedMessages = [...prevMessages, newMessage];
@@ -308,18 +308,18 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const renderMessageItem = ({ item }: { item: Message }) => (
     <View style={[
       commonStyles.messageWrapper,
-      item.type === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
+      item.sender === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
     ]}>
-      {item.type !== 'system' && (
+      {item.sender !== 'system' && (
         <Image source={item.avatar} style={commonStyles.avatar} />
       )}
       <View style={[
         commonStyles.messageContainer,
-        item.type === 'user' ? commonStyles.userMessage :
-        item.type === 'assistant' ? commonStyles.assistantMessage :
+        item.sender === 'user' ? commonStyles.userMessage :
+        item.sender === 'assistant' ? commonStyles.assistantMessage :
         commonStyles.systemMessage
       ]}>
-        {item.type !== 'system' && (
+        {item.sender !== 'system' && (
           <Text style={commonStyles.senderName}>{item.name}</Text>
         )}
         {item.image ? (
@@ -331,12 +331,12 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         ) : (
           <Text style={[
             commonStyles.messageText,
-            item.type === 'system' && commonStyles.systemMessageText
+            item.sender === 'system' && commonStyles.systemMessageText
           ]}>
             {item.text}
           </Text>
         )}
-        {item.type !== 'system' && !item.image && (
+        {item.sender !== 'system' && !item.image && (
           <Text style={commonStyles.timestampText}>{item.timestamp}</Text>
         )}
       </View>
