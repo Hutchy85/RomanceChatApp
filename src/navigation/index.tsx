@@ -8,6 +8,7 @@ import StorySceneScreen from '../screens/StorySceneScreen';
 import ChatScreen from '../screens/ChatScreen';
 import StoryDashboardScreen from '../screens/StoryDashboardScreen';
 import SessionSelectionScreen from '../screens/SessionSelectionScreen';
+import SaveManagerScreen from '../screens/SaveManagerScreen';
 
 // Import session types
 import { StorySession } from '../data/sessionstorage';
@@ -131,6 +132,16 @@ const Navigation = () => {
             headerLeft: () => null, // Prevent accidental navigation away
             // You might want to add a save/pause button in headerRight
           })}
+        />
+
+        {/* Save management utilities */}
+        <Stack.Screen
+          name="SaveManager"
+          component={SaveManagerScreen}
+          options={{
+            title: 'Manage Saves',
+            headerBackTitle: 'Dashboard',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

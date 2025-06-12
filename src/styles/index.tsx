@@ -16,6 +16,7 @@ export const colors = {
   systemMessage: '#f0f0f0',
   error: '#ff3b30',
   transparent: 'transparent',
+  border: '#eaeaea', // Added border color
 };
 
 // Font sizes
@@ -368,4 +369,44 @@ export const commonStyles = StyleSheet.create({
     fontSize: fontSizes.small,
     color: colors.darkGray,
   },
+
+  saveItem: {
+    backgroundColor: colors.white,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  saveTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textDark,
+    marginBottom: 8,
+  },
+  saveDetails: {
+    fontSize: 14,
+    color: colors.darkGray,
+    marginBottom: 4,
+  },
+
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  savesList: {
+  paddingHorizontal: 16,
+  paddingTop: 8,
+  paddingBottom: 32,
+},
+
 });
