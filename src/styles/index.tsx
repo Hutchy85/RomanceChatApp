@@ -410,3 +410,243 @@ export const commonStyles = StyleSheet.create({
 },
 
 });
+
+export const enhancedStyles = {
+  container: {
+    flex: 1,
+    paddingtop: 16,
+    backgroundColor: '#FFF8F5', // Warm background
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 1,
+    paddingBottom: 16,
+  },
+  header: {
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFF8F5', // Warm header background
+    alignItems: 'center' as const,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold' as const,
+    color: '#E91E63',
+    margintop: 16,
+    marginBottom: 8,
+    textAlign: 'center' as const,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center' as const,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  dashboardButton: {
+    backgroundColor: '#E91E63',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    marginBottom: 20,
+    shadowColor: '#E91E63',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  dashboardButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    textAlign: 'center' as const,
+  },
+  sectionHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    color: '#333',
+  },
+  storyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
+    overflow: 'hidden' as const,
+  },
+  imageContainer: {
+    position: 'relative' as const,
+    height: 200,
+  },
+  storyImage: {
+  width: 200,
+  height: 120,
+  borderRadius: 16,
+  },
+  imageOverlay: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  statusBadge: {
+    position: 'absolute' as const,
+    top: 12,
+    right: 12,
+    backgroundColor: '#00C853',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  statusBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold' as const,
+  },
+  progressContainer: {
+    position: 'absolute' as const,
+    bottom: 12,
+    left: 12,
+    right: 12,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 2,
+  },
+  progressFill: {
+  height: 8, // or whatever fixed number you want for the progress bar height
+  backgroundColor: '#ff69b4',
+  borderRadius: 8,
+  },
+  storyDetails: {
+    padding: 20,
+  },
+  storyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold' as const,
+    color: '#333',
+    marginBottom: 8,
+  },
+  storyDescription: {
+    fontSize: 15,
+    color: '#666',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  storyMeta: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    marginBottom: 20,
+  },
+  metaItem: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginRight: 16,
+    marginBottom: 4,
+  },
+  metaIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  storyMetaText: {
+    fontSize: 14,
+    color: '#888',
+  },
+  buttonContainer: {
+    gap: 12,
+  },
+  continueButton: {
+    backgroundColor: '#00C853',
+    paddingVertical: 16,
+    borderRadius: 15,
+    shadowColor: '#00C853',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  continueButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    textAlign: 'center' as const,
+  },
+  startButton: {
+    backgroundColor: '#E91E63',
+    paddingVertical: 16,
+    borderRadius: 15,
+    shadowColor: '#E91E63',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  newStoryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#E91E63',
+    paddingVertical: 14,
+    borderRadius: 15,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    textAlign: 'center' as const,
+  },
+  newStoryButtonText: {
+    color: '#E91E63',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  loadingContainer: {
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  loadingContent: {
+    alignItems: 'center' as const,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: '#333',
+    fontWeight: '600' as const,
+  },
+  loadingSubtext: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
+  emptyListContainer: {
+    alignItems: 'center' as const,
+    paddingVertical: 40,
+  },
+  emptyListText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: '600' as const,
+    marginBottom: 8,
+  },
+  emptyListSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center' as const,
+  },
+};

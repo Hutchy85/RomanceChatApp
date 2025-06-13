@@ -7,6 +7,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
@@ -16,10 +18,8 @@ import { Story } from '../../types/index';
 import { storySessionManager, StorySession } from '../../data/sessionstorage';
 import imageMap from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { commonStyles } from '../../styles';
+import { commonStyles, enhancedStyles, } from '../../styles';
 import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
-
-
 type StorySelectionScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
 };
@@ -36,6 +36,8 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [isProcessingStoryAction, setIsProcessingStoryAction] = useState<string | null>(null);
 
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(50));
   const loadStorySessionStates = useCallback(async () => {
     setIsLoadingSessions(true);
     try {
@@ -56,6 +58,20 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
         })
       );
       setStories(storiesWithStates);
+
+       Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
     } catch (error) {
       console.error("Error loading story session states:", error);
       Alert.alert("Error", "Could not load story information. Please try again later.");
@@ -68,7 +84,7 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     } finally {
       setIsLoadingSessions(false);
     }
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   useEffect(() => {
   const unsubscribe = navigation.addListener('focus', () => {
@@ -174,112 +190,169 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     );
   };
 
-  const renderStoryItem = ({ item }: { item: StoryWithSessionInfo }) => {
+  const renderStoryItem = ({ item, index }: { item: StoryWithSessionInfo; index: number }) => {
     const imageSource = imageMap[item.image as keyof typeof imageMap] || require('../../assets/images/defaultImage.png');
     const isCurrentStoryProcessing = isProcessingStoryAction === item.id;
 
-    return (
-      <View style={commonStyles.storyCard}>
-        <Image
-          source={imageSource}
-          style={commonStyles.storyImage}
-          resizeMode="cover"
-        />
-        <View style={commonStyles.storyDetails}>
-          <Text style={commonStyles.storyTitle}>{item.title}</Text>
-          <Text style={commonStyles.storyDescription}>{item.description}</Text>
-          <View style={commonStyles.storyMeta}>
-            <Text style={commonStyles.storyMetaText}>Duration: {item.duration}</Text>
-            <Text style={commonStyles.storyMetaText}>Theme: {item.theme}</Text>
-            {item.hasSession && (
-              <Text style={commonStyles.storyMetaText}>
-                {item.sessionCount} saved session{item.sessionCount > 1 ? 's' : ''}
-              </Text>
-            )}
-          </View>
+    // Staggered animation for each item
+    const itemAnimatedStyle = {
+      opacity: fadeAnim,
+      transform: [
+        {
+          translateY: slideAnim.interpolate({
+            inputRange: [0, 50],
+            outputRange: [0, 50],
+          })
+        }
+      ]
+    };
 
+    return (
+      <Animated.View 
+        style={[
+          enhancedStyles.storyCard,
+          itemAnimatedStyle,
+          { 
+            // Stagger animation based on index
+            transform: [
+              {
+                translateY: slideAnim.interpolate({
+                  inputRange: [0, 50],
+                  outputRange: [0, 50 + (index * 10)],
+                })
+              }
+            ]
+          }
+        ]}
+      >
+        {/* Enhanced image container with overlay */}
+        <View style={enhancedStyles.imageContainer}>
+          <Image
+            source={imageSource}
+            style={enhancedStyles.storyImage}
+            resizeMode="cover"
+          />
+          {/* Gradient overlay for better text readability */}
+          <View style={enhancedStyles.imageOverlay} />
+          
+          {/* Story status badge */}
           {item.hasSession && (
+            <View style={enhancedStyles.statusBadge}>
+              <Text style={enhancedStyles.statusBadgeText}>IN PROGRESS</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={enhancedStyles.storyDetails}>
+          {/* Enhanced title with better typography */}
+          <Text style={enhancedStyles.storyTitle}>{item.title}</Text>
+          <Text style={enhancedStyles.storyDescription} numberOfLines={3}>
+            {item.description}
+          </Text>
+
+          {/* Enhanced button styling */}
+          <View style={enhancedStyles.buttonContainer}>
+            {item.hasSession && (
+              <TouchableOpacity
+                style={[
+                  enhancedStyles.continueButton,
+                  isCurrentStoryProcessing && enhancedStyles.buttonDisabled,
+                ]}
+                onPress={() => handleShowSessionOptions(item)}
+                disabled={isCurrentStoryProcessing}
+              >
+                {isCurrentStoryProcessing ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <Text style={enhancedStyles.continueButtonText}>
+                      {item.sessionCount > 1 ? '📚 Continue Story...' : '▶️ Continue Story'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               style={[
-                commonStyles.buttonSuccess,
-                isCurrentStoryProcessing && commonStyles.buttonDisabled,
-                { marginBottom: 12 }
+                item.hasSession ? enhancedStyles.newStoryButton : enhancedStyles.startButton,
+                isCurrentStoryProcessing && enhancedStyles.buttonDisabled
               ]}
-              onPress={() => handleShowSessionOptions(item)}
+              onPress={() => handleStartStory(item.id)}
               disabled={isCurrentStoryProcessing}
             >
-              {isCurrentStoryProcessing ? (
-                <ActivityIndicator color={commonStyles.buttonText?.color || "#fff"} />
+              {isCurrentStoryProcessing && !item.hasSession ? (
+                <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={commonStyles.buttonText}>
-                  {item.sessionCount > 1 ? 'Continue Story...' : 'Continue Story'}
+                <Text style={[
+                  enhancedStyles.buttonText,
+                  item.hasSession && enhancedStyles.newStoryButtonText
+                ]}>
+                  {item.hasSession ? '🔄 New Story' : '🚀 Start Story'}
                 </Text>
               )}
             </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            style={[
-              item.hasSession ? commonStyles.buttonSecondary : commonStyles.buttonPrimary,
-              isCurrentStoryProcessing && commonStyles.buttonDisabled
-            ]}
-            onPress={() => handleStartStory(item.id)}
-            disabled={isCurrentStoryProcessing}
-          >
-            {isCurrentStoryProcessing && !item.hasSession ? (
-              <ActivityIndicator color={commonStyles.buttonText?.color || "#fff"} />
-            ) : (
-              <Text style={commonStyles.buttonText}>
-                {item.hasSession ? 'New Story' : 'Start Story'}
-              </Text>
-            )}
-          </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </Animated.View>
     );
   };
 
   if (isLoadingSessions && !stories.length) {
     return (
-      <SafeAreaView style={[commonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={commonStyles.sectionTitle?.color || "#000"} />
-        <Text style={{ marginTop: 10 }}>Loading stories...</Text>
+      <SafeAreaView style={[commonStyles.container, enhancedStyles.loadingContainer]}>
+        <View style={enhancedStyles.loadingContent}>
+          <ActivityIndicator size="large" color="#E91E63" />
+          <Text style={enhancedStyles.loadingText}>Loading your romance stories...</Text>
+          <Text style={enhancedStyles.loadingSubtext}>Preparing your next adventure ✨</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: commonStyles.container?.backgroundColor || '#fff' }}>
-      <View style={commonStyles.container}>
-        <Text style={commonStyles.subtitle}>
-          Choose a story to begin your interactive romance experience
-        </Text>
+    <SafeAreaView style={enhancedStyles.container}>
+      <Animated.View style={[enhancedStyles.content, { opacity: fadeAnim }]}>
+        {/* Enhanced header */}
+        <View style={enhancedStyles.header}>
+          <Text style={enhancedStyles.title}>💕 Romance Stories</Text>
+          <Text style={enhancedStyles.subtitle}>
+            Choose a story to begin your interactive romance experience
+          </Text>
+        </View>
 
+        {/* Enhanced dashboard button */}
         <TouchableOpacity
-          style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
+          style={enhancedStyles.dashboardButton}
           onPress={handleViewDashboard}
         >
-          <Text style={commonStyles.buttonText}>View Your Progress</Text>
+          <Text style={enhancedStyles.dashboardButtonText}>📊 View Your Progress</Text>
         </TouchableOpacity>
 
-        <Text style={commonStyles.sectionTitle}>Available Stories</Text>
-        {isLoadingSessions && stories.length > 0 && (
-          <ActivityIndicator size="small" color={commonStyles.sectionTitle?.color || "#000"} style={{marginVertical: 10}}/>
-        )}
+        {/* Enhanced section title */}
+        <View style={enhancedStyles.sectionHeader}>
+          <Text style={enhancedStyles.sectionTitle}>Available Stories</Text>
+          {isLoadingSessions && stories.length > 0 && (
+            <ActivityIndicator size="small" color="#E91E63" />
+          )}
+        </View>
+
         <FlatList
           data={stories}
           renderItem={renderStoryItem}
           keyExtractor={item => item.id}
-          contentContainerStyle={stories.length === 0 ? commonStyles.listContainer : { paddingBottom: 20 }}
+          contentContainerStyle={enhancedStyles.listContainer}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             !isLoadingSessions ? (
-              <View style={commonStyles.emptyListContainer}>
-                <Text style={commonStyles.emptyListText}>No stories available at the moment.</Text>
+              <View style={enhancedStyles.emptyListContainer}>
+                <Text style={enhancedStyles.emptyListText}>📚 No stories available at the moment.</Text>
+                <Text style={enhancedStyles.emptyListSubtext}>Check back soon for new romantic adventures!</Text>
               </View>
             ) : null
           }
         />
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 };
