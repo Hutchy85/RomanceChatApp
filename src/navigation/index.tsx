@@ -9,6 +9,8 @@ import ChatScreen from '../screens/ChatScreen';
 import StoryDashboardScreen from '../screens/StoryDashboardScreen';
 import SessionSelectionScreen from '../screens/SessionSelectionScreen';
 import SaveManagerScreen from '../screens/SaveManagerScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
+import HeaderMenu from '../components/HeadderMenu'; // Import the header menu component
 
 // Import session types
 import { StorySession } from '../data/sessionstorage';
@@ -17,6 +19,8 @@ import { StorySession } from '../data/sessionstorage';
 export type RootStackParamList = {
   StorySelection: undefined;
   StoryDashboard: undefined;
+  userProfile: undefined; // User profile setup screen
+
   
   // Session management screens
   SessionSelection: { 
@@ -78,16 +82,23 @@ const Navigation = () => {
     },
         }}
       >
+        <Stack.Screen
+          name="userProfile"
+          component={UserProfileScreen}
+          options={{
+          title: 'Your Profile',
+          headerBackTitle: 'Back',
+  }}
+/>
+
         {/* Main story selection */}
         <Stack.Screen 
           name="StorySelection" 
           component={StorySelectionScreen} 
           options={{ 
             title: 'Romance Chat Stories',
-            headerRight: () => (
-              // You could add a button to navigate to StoryDashboard here
-              null
-            ),
+            headerRight: () => <HeaderMenu />
+
           }}
         />
         

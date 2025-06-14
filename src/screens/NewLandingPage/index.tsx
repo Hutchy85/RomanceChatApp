@@ -378,6 +378,8 @@ const RomanceLandingPage: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
+                  title={`Show testimonial ${index + 1}`}
+                  aria-label={`Show testimonial ${index + 1}`}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
                     index === currentTestimonial ? 'bg-rose-500' : 'bg-gray-300'
                   }`}

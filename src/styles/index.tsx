@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, DimensionValue } from 'react-native';
 
 // Color palette
 export const colors = {
@@ -339,12 +339,7 @@ export const commonStyles = StyleSheet.create({
     overflow: 'hidden',
     ...shadows.light,
   },
-  storyImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.lightGray,
-  },
+
   storyDetails: {
     padding: spacing.xl,
   },
@@ -424,8 +419,8 @@ export const enhancedStyles = {
     paddingBottom: 16,
   },
   header: {
-    paddingVertical: 24,
     paddingHorizontal: 16,
+    paddingBottom: 16,
     backgroundColor: '#FFF8F5', // Warm header background
     alignItems: 'center' as const,
   },
@@ -485,12 +480,13 @@ export const enhancedStyles = {
     overflow: 'hidden' as const,
   },
   imageContainer: {
-    position: 'relative' as const,
+    width: '100%' as DimensionValue,
     height: 200,
+    position: 'relative' as const,
   },
   storyImage: {
-  width: 200,
-  height: 120,
+  width: '100%' as DimensionValue,
+  height: '100%' as DimensionValue,
   borderRadius: 16,
   },
   imageOverlay: {

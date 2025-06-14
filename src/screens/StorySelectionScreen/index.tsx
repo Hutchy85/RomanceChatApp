@@ -165,6 +165,10 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     navigation.navigate('StoryDashboard');
   };
 
+  const handleViewUserProfile = () => {
+    navigation.navigate('userProfile');
+  };
+
   const handleShowSessionOptions = (story: StoryWithSessionInfo) => {
     if (story.sessionCount <= 1) {
       // If only one session, continue directly
@@ -232,8 +236,6 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
             style={enhancedStyles.storyImage}
             resizeMode="cover"
           />
-          {/* Gradient overlay for better text readability */}
-          <View style={enhancedStyles.imageOverlay} />
           
           {/* Story status badge */}
           {item.hasSession && (
@@ -315,11 +317,17 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
       <Animated.View style={[enhancedStyles.content, { opacity: fadeAnim }]}>
         {/* Enhanced header */}
         <View style={enhancedStyles.header}>
-          <Text style={enhancedStyles.title}>💕 Romance Stories</Text>
           <Text style={enhancedStyles.subtitle}>
             Choose a story to begin your interactive romance experience
           </Text>
         </View>
+
+        <TouchableOpacity
+          style={enhancedStyles.dashboardButton}
+          onPress={handleViewUserProfile}
+          >
+          <Text style={enhancedStyles.dashboardButtonText}> Profile </Text>
+        </TouchableOpacity>
 
         {/* Enhanced dashboard button */}
         <TouchableOpacity
