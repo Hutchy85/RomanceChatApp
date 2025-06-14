@@ -161,14 +161,6 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     }
   };
 
-  const handleViewDashboard = () => {
-    navigation.navigate('StoryDashboard');
-  };
-
-  const handleViewUserProfile = () => {
-    navigation.navigate('userProfile');
-  };
-
   const handleShowSessionOptions = (story: StoryWithSessionInfo) => {
     if (story.sessionCount <= 1) {
       // If only one session, continue directly
@@ -321,21 +313,6 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
             Choose a story to begin your interactive romance experience
           </Text>
         </View>
-
-        <TouchableOpacity
-          style={enhancedStyles.dashboardButton}
-          onPress={handleViewUserProfile}
-          >
-          <Text style={enhancedStyles.dashboardButtonText}> Profile </Text>
-        </TouchableOpacity>
-
-        {/* Enhanced dashboard button */}
-        <TouchableOpacity
-          style={enhancedStyles.dashboardButton}
-          onPress={handleViewDashboard}
-        >
-          <Text style={enhancedStyles.dashboardButtonText}>📊 View Your Progress</Text>
-        </TouchableOpacity>
 
         {/* Enhanced section title */}
         <View style={enhancedStyles.sectionHeader}>

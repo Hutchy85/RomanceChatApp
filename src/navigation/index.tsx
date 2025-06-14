@@ -19,7 +19,7 @@ import { StorySession } from '../data/sessionstorage';
 export type RootStackParamList = {
   StorySelection: undefined;
   StoryDashboard: undefined;
-  userProfile: undefined; // User profile setup screen
+  UserProfile: undefined; // User profile setup screen
 
   
   // Session management screens
@@ -83,7 +83,7 @@ const Navigation = () => {
         }}
       >
         <Stack.Screen
-          name="userProfile"
+          name="UserProfile"
           component={UserProfileScreen}
           options={{
           title: 'Your Profile',

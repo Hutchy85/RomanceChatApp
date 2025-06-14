@@ -28,6 +28,7 @@ const HeaderMenu = () => {
             iconColor="white"
           />
         }
+        contentStyle={{paddingTop: 20, padding: 8 }}
       >
         <Menu.Item
           onPress={() => {
@@ -39,7 +40,7 @@ const HeaderMenu = () => {
         <Menu.Item
           onPress={() => {
             closeMenu();
-            navigation.navigate('userProfile');
+            navigation.navigate('UserProfile');
           }}
           title="Profile"
         />
