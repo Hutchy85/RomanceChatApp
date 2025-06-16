@@ -11,16 +11,20 @@ import SessionSelectionScreen from '../screens/SessionSelectionScreen';
 import SaveManagerScreen from '../screens/SaveManagerScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import HeaderMenu from '../components/HeadderMenu'; // Import the header menu component
-
+import ProfileGate from '../screens/ProfileGateScreen'; // Import the profile gate screen
+import EditProfileScreen from '../screens/EditProfileScreen'; // Import the edit profile screen
 // Import session types
 import { StorySession } from '../data/sessionstorage';
 
 // Define the navigation parameters
 export type RootStackParamList = {
+
+  ProfileGate: undefined; // Initial gate to check user profile
+
   StorySelection: undefined;
   StoryDashboard: undefined;
   UserProfile: undefined; // User profile setup screen
-
+  EditProfile: undefined; // Screen to edit user profile
   
   // Session management screens
   SessionSelection: { 
@@ -61,7 +65,7 @@ const Navigation = () => {
       }}
     >
       <Stack.Navigator
-        initialRouteName="StorySelection"
+        initialRouteName="ProfileGate"
         screenOptions={{
           headerStyle: {
             backgroundColor: '#ff6b6b',
@@ -83,6 +87,12 @@ const Navigation = () => {
         }}
       >
         <Stack.Screen
+        name="ProfileGate"
+        component={ProfileGate}
+        options={{ headerShown: false }} 
+/>
+
+        <Stack.Screen
           name="UserProfile"
           component={UserProfileScreen}
           options={{
@@ -90,6 +100,16 @@ const Navigation = () => {
           headerBackTitle: 'Back',
   }}
 />
+
+        <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+        title: 'Edit Profile',
+        headerBackTitle: 'Back',
+  }}
+/>
+
 
         {/* Main story selection */}
         <Stack.Screen 

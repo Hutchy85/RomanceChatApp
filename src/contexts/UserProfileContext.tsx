@@ -4,14 +4,17 @@ import { UserProfile } from '../data/userProfile';
 
 interface UserProfileContextType {
   profile: UserProfile | null;
+  isProfileLoaded: boolean;
   updateProfile: (profile: UserProfile) => void;
   clearProfile: () => void;
 }
+
 
 export const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -19,6 +22,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
       if (savedProfile) {
         setProfile(JSON.parse(savedProfile));
       }
+      setIsProfileLoaded(true);
     };
     loadProfile();
   }, []);
@@ -34,7 +38,9 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserProfileContext.Provider value={{ profile, updateProfile, clearProfile }}>
+    <UserProfileContext.Provider
+      value={{ profile, isProfileLoaded, updateProfile, clearProfile }}
+    >
       {children}
     </UserProfileContext.Provider>
   );

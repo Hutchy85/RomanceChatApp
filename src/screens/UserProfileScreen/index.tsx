@@ -197,5 +197,6 @@ const styles = {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxxl,
     paddingTop: spacing.xxl,
+    marginbottom: spacing.xxxl,
   },
 };

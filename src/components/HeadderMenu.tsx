@@ -16,20 +16,21 @@ const HeaderMenu = () => {
   const closeMenu = () => setVisible(false);
 
   return (
-    <View style={{ flexDirection: 'row', paddingRight: 8 }}>
-      <Menu
-        visible={visible}
-        onDismiss={closeMenu}
-        anchor={
-          <IconButton
-            icon="dots-vertical"
-            size={24}
-            onPress={openMenu}
-            iconColor="white"
-          />
-        }
-        contentStyle={{paddingTop: 20, padding: 8 }}
-      >
+    <View style={{ flexDirection: 'row', paddingRight: 8, alignItems: 'center' }}>
+  <Menu
+    visible={visible}
+    onDismiss={closeMenu}
+    anchor={
+      <IconButton
+        icon="dots-vertical"
+        size={24}
+        onPress={openMenu}
+        iconColor="white"
+        accessibilityLabel="Open options menu"
+      />
+    }
+    contentStyle={{ paddingVertical: 8, marginTop: 10 }}
+  >
         <Menu.Item
           onPress={() => {
             closeMenu();
@@ -40,9 +41,9 @@ const HeaderMenu = () => {
         <Menu.Item
           onPress={() => {
             closeMenu();
-            navigation.navigate('UserProfile');
+            navigation.navigate('EditProfile');
           }}
-          title="Profile"
+          title="Edit Profile"
         />
         <Menu.Item
           onPress={() => {
