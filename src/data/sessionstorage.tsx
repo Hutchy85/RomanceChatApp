@@ -1,94 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppError, ErrorType, getErrorMessage } from '../utils/errorHandling';
-import { CharacterStats, DEFAULT_CHARACTER_STATS } from '../types';
+import { DEFAULT_CHARACTER_STATS } from '../types';
+import { PlayerChoice,
+  StoryMemory,
+  SessionCheckpoint,
+  StorySession,
+  SaveMetadata,
+  GameSave,
+  Message,
+  CloudSyncStatus,
+  CharacterStats,
+} from '../types';
 
-// Enhanced TypeScript types for the save system
-export interface PlayerChoice {
-  id: string;
-  sceneId: string;
-  choiceIndex: number;
-  choiceText: string;
-  timestamp: string;
-  consequences?: string[]; // Tags for what this choice affected
-  effects?: Partial<CharacterStats>; // direct stat effects
-}
-
-export interface StoryMemory {
-  id: string;
-  type: 'event' | 'dialogue' | 'achievement' | 'secret';
-  title: string;
-  description: string;
-  sceneId: string;
-  timestamp: string;
-  tags: string[];
-  metadata?: Record<string, any>;
-}
-
-export interface SessionCheckpoint {
-  sceneId: string;
-  timestamp: string;
-  characterStats: CharacterStats;
-  recentChoices: PlayerChoice[]; // Last 5 choices for context
-  storyFlags: Record<string, boolean>;
-}
-
-export interface StorySession {
-  id: string; // Unique session ID
-  storyId: string;
-  version: number; // For migration compatibility
-  
-  // Core state
-  currentSceneId: string;
-  startedAt: string;
-  lastPlayedAt: string;
-  isCompleted: boolean;
-  
-  // Character and story state
-  characterStats: CharacterStats;
-  storyFlags: Record<string, boolean>; // Generic flags for branching logic
-  customVariables: Record<string, any>; // For story-specific data
-  
-  // History tracking
-  choices: PlayerChoice[];
-  memories: StoryMemory[];
-  messages: Message[]; // Your existing message type
-  
-  // Performance optimization
-  checkpoints: SessionCheckpoint[]; // Periodic saves for quick recovery
-  
-  // Metadata
-  totalPlayTime: number; // in seconds
-  choiceCount: number;
-  scenesVisited: string[];
-  
-  // Future-proofing
-  cloudSyncStatus?: 'synced' | 'pending' | 'conflict' | 'error';
-  lastSyncedAt?: string;
-  cloudVersion?: number;
-}
-
-export interface SaveMetadata {
-  version: string;
-  createdAt: string;
-  lastModified: string;
-  deviceId?: string;
-  appVersion: string;
-}
-
-export interface GameSave {
-  metadata: SaveMetadata;
-  sessions: Record<string, StorySession>; // sessionId -> session data
-  globalSettings?: Record<string, any>;
-}
-
-// Define the Message type or import it from your message module
-export interface Message {
-  id: string;
-  sender: string;
-  content: string;
-  timestamp: string;
-  // Add other fields as needed
-}
 
 // Enhanced save/load service
 export class StorySessionManager {

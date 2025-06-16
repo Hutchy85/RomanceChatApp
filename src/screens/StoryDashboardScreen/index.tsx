@@ -14,7 +14,7 @@ import { RootStackParamList } from '../../navigation';
 import { stories } from '../../data/stories/index';
 import { Story } from '../../types/index';
 import { useSessionAwareNavigation } from '../../contexts/SessionNavigationContext'; // Changed this import
-import { StorySession } from '../../data/sessionstorage';
+import { StorySession } from '../../types';
 import imageMap from '../../data/imageMap';
 import { commonStyles, colors, fontSizes, spacing, borderRadius } from '../../styles';
 

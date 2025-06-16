@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { storySessionManager, StorySession } from '../data/sessionstorage';
+import { storySessionManager } from '../data/sessionstorage';
 import { useNavigation } from '@react-navigation/native';
-import { CharacterStats, DEFAULT_CHARACTER_STATS } from '../types';
+import { CharacterStats, DEFAULT_CHARACTER_STATS, StorySession } from '../types';
 
 interface SessionNavigationContextType {
   currentSession: StorySession | null;

@@ -26,17 +26,7 @@ export interface Choice {
   nextSceneIndex?: string;
 }
 
-export interface Scene {
-  id: string;
-  type: 'chat' | 'story';
-  text?: string;
-  characterName?: string;
-  systemPrompt?: string;
-  imageTriggers?: ImageTrigger[];
-  sceneTriggers?: SceneTrigger[];
-  nextSceneIndex?: string;
-  choices?: Choice[];
-}
+/* Removed duplicate Scene interface definition to resolve duplicate identifier error */
 
 export interface Story {
   id: string;
@@ -47,6 +37,9 @@ export interface Story {
   theme: string;
   image: string;
   scenes: Scene[];
+  backgroundImage?: string;
+  musicTrack?: string;
+
 }
 
 export interface SavedSession {
@@ -73,3 +66,132 @@ export const DEFAULT_CHARACTER_STATS: CharacterStats = {
   mood: 'neutral',
   relationship_level: 1,
 };
+
+export interface UserProfile {
+  playerName: string;
+  partnerName: string;
+  pronouns: {
+    subject: string; // he/she/they
+    object: string;  // him/her/them
+    possessive: string; // his/her/their
+  };
+}
+
+export interface PlayerChoice {
+  id: string;
+  sceneId: string;
+  choiceIndex: number;
+  choiceText: string;
+  timestamp: string;
+  consequences?: string[];
+  effects?: Partial<CharacterStats>;
+}
+
+export interface StoryMemory {
+  id: string;
+  type: 'event' | 'dialogue' | 'achievement' | 'secret';
+  title: string;
+  description: string;
+  sceneId: string;
+  timestamp: string;
+  tags: string[];
+  metadata?: Record<string, any>;
+}
+
+export interface SessionCheckpoint {
+  sceneId: string;
+  timestamp: string;
+  characterStats: CharacterStats;
+  recentChoices: PlayerChoice[];
+  storyFlags: Record<string, boolean>;
+}
+
+export interface StorySession {
+  id: string;
+  storyId: string;
+  version: number;
+  currentSceneId: string;
+  startedAt: string;
+  lastPlayedAt: string;
+  isCompleted: boolean;
+  characterStats: CharacterStats;
+  storyFlags: Record<string, boolean>;
+  customVariables: Record<string, any>;
+  choices: PlayerChoice[];
+  memories: StoryMemory[];
+  messages: Message[];
+  checkpoints: SessionCheckpoint[];
+  totalPlayTime: number;
+  choiceCount: number;
+  scenesVisited: string[];
+  cloudSyncStatus?: CloudSyncStatus;
+  lastSyncedAt?: string;
+  cloudVersion?: number;
+}
+
+export interface SaveMetadata {
+  version: string;
+  createdAt: string;
+  lastModified: string;
+  deviceId?: string;
+  appVersion: string;
+}
+
+export interface GameSave {
+  metadata: SaveMetadata;
+  sessions: Record<string, StorySession>;
+  globalSettings?: Record<string, any>;
+}
+
+export enum CloudSyncStatus {
+  Synced = 'synced',
+  Pending = 'pending',
+  Conflict = 'conflict',
+  Error = 'error',
+}
+
+
+export type SceneType = 'story' | 'chat';
+
+export interface ImageTrigger {
+  keyword: string;
+  images: string[];
+}
+
+export interface SceneTrigger {
+  keyword: string;
+  nextSceneIndex: string;
+}
+
+export interface SceneBase {
+  id: string;
+  type: SceneType;
+}
+
+export interface ChatScene extends SceneBase {
+  type: 'chat';
+  characterName: string;
+  systemPrompt: string;
+  imageTriggers?: ImageTrigger[];
+  sceneTriggers?: SceneTrigger[];
+}
+
+export interface StoryScene extends SceneBase {
+  type: 'story';
+  text: string;
+  choices?: Choice[];
+  nextSceneIndex?: string;
+}
+
+export type Scene = ChatScene | StoryScene;
+
+export interface Story {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  prologue: string;
+  theme: string;
+  image: string;
+  scenes: Scene[];
+}

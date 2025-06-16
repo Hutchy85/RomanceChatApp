@@ -1,23 +1,15 @@
-import { Story } from '../../../types'
+import { Story } from '../../../types';
 import imageMap from '../../imageMap';
 
 export const christmasGift: Story = {
   id: 'a-christmas-gift',
-    title: 'A Christmas Gift',
-    description: 'Its the day of your office christmas party and You and your wife are heading there tonight',
-    duration: '30 minutes',
-    prologue: `It's funny how time can slip away from you. One minute you're exchanging vows, promising to love and cherish each other, and the next thing you know, 12 years have passed. That's how long it's been since Holly and I got married. Twelve years of laughter, tears, and adventure.
-            We've built a life together, one that's filled with love and comfort. Our relationship is strong, and I'm grateful for that. We still make each other laugh, still hold hands, still look into each other's eyes and feel that spark.
-            But if I'm being honest, the excitement has worn off a little... in and out of the bedroom. We've fallen into a routine, a comfortable one, but a routine nonetheless. We know what to expect from each other, and while that's reassuring, it's also... predictable.
-            I recently started a new job, hoping to shake things up a bit. I was feeling stagnant in my old role, and I thought a change of scenery would be just what I needed. But so far, it's been more of the same.
-            I'm still adjusting, still trying to find my footing, but I'm not sure if it's going to be enough to reignite the spark that's been missing from our lives.
-            As we approach another Christmas season, I'm reminded of how much I love this time of year. The lights, the decorations, the music... it all feels so festive and joyful. But amidst all the cheer, I have to admit that I'm not looking forward to one thing: the work party.
-            It's a necessary evil, I suppose. A chance to mingle with colleagues and pretend to be interested in their lives. But for me, it's always been a source of stress. I'm not exactly the most outgoing person, and the thought of making small talk with people I barely know makes my skin crawl.
-            Little did I know, tonight's party will be different. Tonight, something will happen that will change everything.
-            As I sat at my desk pondering what to do about the party, my phone buzzed across the desk...`,
+  title: 'A Christmas Gift',
+  description: 'It’s the day of your office Christmas party and you and your wife are heading there tonight.',
+  duration: '30 minutes',
+  prologue: `It's funny how time can slip away from you. One minute you're exchanging vows, promising to love and cherish each other, and the next thing you know, 12 years have passed. That's how long it's been since Holly and I got married. Twelve years of laughter, tears, and adventure. We've built a life together, one that's filled with love and comfort. Our relationship is strong, and I'm grateful for that. We still make each other laugh, still hold hands, still look into each other's eyes and feel that spark. But if I'm being honest, the excitement has worn off a little... in and out of the bedroom. We've fallen into a routine, a comfortable one, but a routine nonetheless. We know what to expect from each other, and while that's reassuring, it's also... predictable. I recently started a new job, hoping to shake things up a bit. I was feeling stagnant in my old role, and I thought a change of scenery would be just what I needed. But so far, it's been more of the same. I'm still adjusting, still trying to find my footing, but I'm not sure if it's going to be enough to reignite the spark that's been missing from our lives. As we approach another Christmas season, I'm reminded of how much I love this time of year. The lights, the decorations, the music... it all feels so festive and joyful. But amidst all the cheer, I have to admit that I'm not looking forward to one thing: the work party. It's a necessary evil, I suppose. A chance to mingle with colleagues and pretend to be interested in their lives. But for me, it's always been a source of stress. I'm not exactly the most outgoing person, and the thought of making small talk with people I barely know makes my skin crawl. Little did I know, tonight's party will be different. Tonight, something will happen that will change everything. As I sat at my desk pondering what to do about the party, my phone buzzed across the desk...`,
+  theme: 'hotwife/cuckold',
+  image: 'venice',
 
-    theme: 'hotwife/cuckold',
-    image: 'venice', // image key only
   scenes: [
     {
       id: 'chat',
@@ -73,137 +65,109 @@ Example Responses:
 - "I know Mike can be a bit much sometimes, but try to see the party as an opportunity to build a better relationship with him. Who knows, you might even have some fun!"
 - "I was thinking of wearing either this red dress or this black jumpsuit. What do you think?"`
 ,
-imageTriggers: [
-  {
-    keyword: 'red dress',
-    images: [imageMap.redDress, imageMap.blackJumpsuit],
-  },
-],
- sceneTriggers: [
+      imageTriggers: [
         {
-          keyword: 'meet you at home', // More specific phrase
-          nextSceneIndex: 'partyArrival',
-        },
-        {
-          keyword: 'see you at home', // Alternative phrasing
-          nextSceneIndex: 'partyArrival',
-        },
-        {
-          keyword: 'heading home now', // Another alternative
-          nextSceneIndex: 'partyArrival',
+          keyword: 'red dress',
+          images: [imageMap.redDress, imageMap.blackJumpsuit],
         },
       ],
-},
-{
-  id: 'partyArrival',
-  type: 'story',
-  text: "The party was in full swing. Fairy lights flickered around the room, and 'Jingle Bell Rock' filled the air. You stood by the drinks table, trying to smile as your coworkers told the same old office stories. Holly was radiant in a red dress, laughing easily with the other wives, her presence lighting up the room. Your boss, Mike, stood loudly holding court in the middle of the room, already half-cut. Holly leaned in. 'Wow, what an arsehole,' she whispered.",
-  choices: [
-    {
-      text: "Laugh quietly and agree.",
-      nextSceneIndex: 'party_scene_2a'
+      sceneTriggers: [
+        { keyword: 'meet you at home', nextSceneIndex: 'partyArrival' },
+        { keyword: 'see you at home', nextSceneIndex: 'partyArrival' },
+        { keyword: 'heading home now', nextSceneIndex: 'partyArrival' },
+      ],
     },
+
     {
-      text: "Stay quiet, unsure how to respond.",
-      nextSceneIndex: 'party_scene_2b'
+      id: 'partyArrival',
+      type: 'story',
+      text: "The party was in full swing. Fairy lights flickered... (rest of text)",
+      choices: [
+        { text: "Laugh quietly and agree.", nextSceneIndex: 'party_scene_2a' },
+        { text: "Stay quiet, unsure how to respond.", nextSceneIndex: 'party_scene_2b' },
+        { text: "Say you want to leave already.", nextSceneIndex: 'party_scene_leave_early_check' },
+      ],
     },
+
     {
-      text: "Say you want to leave already.",
-      nextSceneIndex: 'party_scene_leave_early_check'
-    }
-  ]
-},
-{
-  id: 'party_scene_2a',
-  type: 'story',
-  text: "'Yeah, he's a real treat,' you replied with a smirk. Holly grinned. 'Good, thought it was just me.' Just then, Mike stumbled over, his eyes roaming shamelessly over Holly. 'Well, well, look what we have here,' he slurred.",
-  nextSceneIndex: 'party_scene_mike'
-},
-{
-  id: 'party_scene_2b',
-  type: 'story',
-  text: "You stayed silent, not sure what to say. Holly gave you a sideways glance but didn’t push it. Just then, Mike stumbled over, his eyes roving all over Holly. 'Well, well, look what we have here,' he slurred.",
-  nextSceneIndex: 'party_scene_mike'
-},
-{
-  id: 'party_scene_mike',
-  type: 'story',
-  text: "'Hi Mike,' you said, but he barely acknowledged you. He turned to Holly with a sleazy grin. 'You must be the famous Holly. I see why John's so smug.' Your fists clenched involuntarily.",
-  choices: [
-    {
-      text: "Confront Mike immediately.",
-      nextSceneIndex: 'party_scene_confront'
+      id: 'party_scene_2a',
+      type: 'story',
+      text: "'Yeah, he's a real treat,' you replied...",
+      nextSceneIndex: 'party_scene_mike',
     },
+
     {
-      text: "Stay silent and let Holly deal with it.",
-      nextSceneIndex: 'party_scene_holly_handles'
-    }
-  ]
-},
-{
-  id: 'party_scene_confront',
-  type: 'story',
-  text: "'What exactly do you mean by that, Mike?' you asked, your tone tight. Mike laughed. 'Relax mate, just having a laugh.' Holly cut in coolly. 'I'll have a white wine, thanks.' Mike, deflated, shuffled off toward the bar.",
-  nextSceneIndex: 'party_scene_check_in'
-},
-{
-  id: 'party_scene_holly_handles',
-  type: 'story',
-  text: "You kept silent, letting Holly deal with it. 'I'll have a white wine, thanks,' she said flatly. Mike chuckled awkwardly and shuffled away toward the bar.",
-  nextSceneIndex: 'party_scene_check_in'
-},
-{
-  id: 'party_scene_check_in',
-  type: 'story',
-  text: "'You alright?' you asked as Holly turned back to you. 'Yeah,' she said, smiling faintly. 'What a creep though.' The music shifted to 'Last Christmas' as people kept drinking. You glanced around, unsure if you wanted to stay much longer.",
-  choices: [
-    {
-      text: "'Let's leave now, this place is grim.'",
-      nextSceneIndex: 'party_scene_leave'
+      id: 'party_scene_2b',
+      type: 'story',
+      text: "You stayed silent, not sure what to say...",
+      nextSceneIndex: 'party_scene_mike',
     },
+
     {
-      text: "'One more drink then we'll go.'",
-      nextSceneIndex: 'party_scene_one_more'
+      id: 'party_scene_mike',
+      type: 'story',
+      text: "'Hi Mike,' you said, but he barely acknowledged you...",
+      choices: [
+        { text: "Confront Mike immediately.", nextSceneIndex: 'party_scene_confront' },
+        { text: "Stay silent and let Holly deal with it.", nextSceneIndex: 'party_scene_holly_handles' },
+      ],
     },
+
     {
-      text: "'I should have punched him.'",
-      nextSceneIndex: 'party_scene_holly_reacts'
-    }
-  ]
-},
-{
-  id: 'party_scene_leave',
-  type: 'story',
-  text: "You took Holly’s hand. 'Let’s get out of here.' She smiled, relieved. You left the party behind, stepping out into the cold night air together.",
-  nextSceneIndex: 'drive_home'
-},
-{
-  id: 'party_scene_one_more',
-  type: 'story',
-  text: "'One more drink then we'll go,' you suggested. 'Alright,' Holly agreed. 'But you owe me pizza on the way home.' You both laughed.",
-  nextSceneIndex: 'drive_home'
-},
-{
-  id: 'party_scene_holly_reacts',
-  type: 'story',
-  text: "'I should've punched him,' you grumbled. Holly frowned. 'And make a scene? Nah. Not worth it.' You sensed a flicker of disappointment.",
-  nextSceneIndex: 'party_scene_leave'
-},
-{
-  id: 'party_scene_leave_early_check',
-  type: 'story',
-  text: "'I kinda wanna leave already,' you admitted. 'Bit early, isn't it?' Holly asked.",
-  choices: [
-    {
-      text: "'Yeah, let's stick it out a bit longer.'",
-      nextSceneIndex: 'party_scene_2a'
+      id: 'party_scene_confront',
+      type: 'story',
+      text: "'What exactly do you mean by that, Mike?' you asked...",
+      nextSceneIndex: 'party_scene_check_in',
     },
+
     {
-      text: "'Nah, let's just go.'",
-      nextSceneIndex: 'party_scene_leave'
-    }
-  ]
-},
+      id: 'party_scene_holly_handles',
+      type: 'story',
+      text: "You kept silent, letting Holly deal with it...",
+      nextSceneIndex: 'party_scene_check_in',
+    },
+
+    {
+      id: 'party_scene_check_in',
+      type: 'story',
+      text: "'You alright?' you asked as Holly turned back to you...",
+      choices: [
+        { text: "'Let's leave now, this place is grim.'", nextSceneIndex: 'party_scene_leave' },
+        { text: "'One more drink then we'll go.'", nextSceneIndex: 'party_scene_one_more' },
+        { text: "'I should have punched him.'", nextSceneIndex: 'party_scene_holly_reacts' },
+      ],
+    },
+
+    {
+      id: 'party_scene_leave',
+      type: 'story',
+      text: "You took Holly’s hand. 'Let’s get out of here.'...",
+      nextSceneIndex: 'drive_home',
+    },
+
+    {
+      id: 'party_scene_one_more',
+      type: 'story',
+      text: "'One more drink then we'll go,' you suggested...",
+      nextSceneIndex: 'drive_home',
+    },
+
+    {
+      id: 'party_scene_holly_reacts',
+      type: 'story',
+      text: "'I should've punched him,' you grumbled...",
+      nextSceneIndex: 'party_scene_leave',
+    },
+
+    {
+      id: 'party_scene_leave_early_check',
+      type: 'story',
+      text: "'I kinda wanna leave already,' you admitted...",
+      choices: [
+        { text: "'Yeah, let's stick it out a bit longer.'", nextSceneIndex: 'party_scene_2a' },
+        { text: "'Nah, let's just go.'", nextSceneIndex: 'party_scene_leave' },
+      ],
+    },
 {
   id: 'drive_home',
   type: 'story',

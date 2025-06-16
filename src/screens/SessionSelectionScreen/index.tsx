@@ -5,7 +5,7 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import { useSessionAwareNavigation } from '../../contexts/SessionNavigationContext';
-import { StorySession } from '../../data/sessionstorage';
+import { StorySession } from '../../types';
 
 type SessionSelectionScreenRouteProp = RouteProp<RootStackParamList, 'SessionSelection'>;
 type SessionSelectionScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SessionSelection'>;
