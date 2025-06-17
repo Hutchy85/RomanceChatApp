@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile } from '../types';
 
@@ -44,4 +45,12 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </UserProfileContext.Provider>
   );
+};
+
+export const useUserProfile = () => {
+  const context = useContext(UserProfileContext);
+  if (!context) {
+    throw new Error('useUserProfile must be used within a UserProfileProvider');
+  }
+  return context;
 };

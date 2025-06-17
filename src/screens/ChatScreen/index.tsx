@@ -8,14 +8,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { getChatbotReply } from '../../api/apiClient';
-import { Message } from '../../types/index';
+import { Message, Scene, UserProfile } from '../../types/index';
 import { stories } from '../../data/stories/index';
-import { Scene } from '../../types/index';
 import { storySessionManager } from '../../data/sessionstorage';
 import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
 import imageMap from '../../data/imageMap';
 import { colors, commonStyles } from '../../styles';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
+import { useUserProfile } from '../../contexts/UserProfileContext';
 import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
 
 type ChatScreenProps = {
@@ -25,7 +25,7 @@ type ChatScreenProps = {
 
 const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const { storyId, sessionId, sceneId } = route.params;
-  
+  const { profile, isProfileLoaded } = useUserProfile();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -305,7 +305,12 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     }
   };
 
-  const renderMessageItem = ({ item }: { item: Message }) => (
+  const renderMessageItem = ({ item }: { item: Message }) => {
+  const displayName = item.sender === 'user'
+    ? profile?.playerName || 'You'
+    : item.name;
+
+  return (
     <View style={[
       commonStyles.messageWrapper,
       item.sender === 'user' ? commonStyles.userMessageWrapper : commonStyles.assistantMessageWrapper
@@ -320,7 +325,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         commonStyles.systemMessage
       ]}>
         {item.sender !== 'system' && (
-          <Text style={commonStyles.senderName}>{item.name}</Text>
+          <Text style={commonStyles.senderName}>{displayName}</Text>
         )}
         {item.image ? (
           <Image
@@ -342,6 +347,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
       </View>
     </View>
   );
+};
+
 
   if (isLoading) {
     return (

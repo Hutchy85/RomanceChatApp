@@ -10,6 +10,17 @@ export type Message = {
   avatar?: number; // image reference id or URI for avatar
 };
 
+export interface Scene {
+  id: string;
+  type: 'story' | 'chat';
+  text?: string; // for story scenes
+  characterName?: string; // for chat scenes
+  systemPrompt?: string; // for chat scenes
+  imageTriggers?: ImageTrigger[]; // for chat scenes
+  sceneTriggers?: SceneTrigger[]; // for chat scenes
+  choices?: Choice[]; // for story scenes
+  nextSceneIndex?: string; // for story scenes
+}
 
 export interface ImageTrigger {
   keyword: string;
@@ -182,8 +193,6 @@ export interface StoryScene extends SceneBase {
   choices?: Choice[];
   nextSceneIndex?: string;
 }
-
-export type Scene = ChatScene | StoryScene;
 
 export interface Story {
   id: string;
