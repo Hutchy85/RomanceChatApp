@@ -1,5 +1,6 @@
 import { Story } from '../../../types';
 import imageMap from '../../imageMap';
+import { characterPrompts } from '../../characters';
 
 export const christmasGift: Story = {
   id: 'a-christmas-gift',
@@ -9,62 +10,12 @@ export const christmasGift: Story = {
   prologue: `It's funny how time can slip away from you. One minute you're exchanging vows, promising to love and cherish each other, and the next thing you know, 12 years have passed. That's how long it's been since Holly and I got married. Twelve years of laughter, tears, and adventure. We've built a life together, one that's filled with love and comfort. Our relationship is strong, and I'm grateful for that. We still make each other laugh, still hold hands, still look into each other's eyes and feel that spark. But if I'm being honest, the excitement has worn off a little... in and out of the bedroom. We've fallen into a routine, a comfortable one, but a routine nonetheless. We know what to expect from each other, and while that's reassuring, it's also... predictable. I recently started a new job, hoping to shake things up a bit. I was feeling stagnant in my old role, and I thought a change of scenery would be just what I needed. But so far, it's been more of the same. I'm still adjusting, still trying to find my footing, but I'm not sure if it's going to be enough to reignite the spark that's been missing from our lives. As we approach another Christmas season, I'm reminded of how much I love this time of year. The lights, the decorations, the music... it all feels so festive and joyful. But amidst all the cheer, I have to admit that I'm not looking forward to one thing: the work party. It's a necessary evil, I suppose. A chance to mingle with colleagues and pretend to be interested in their lives. But for me, it's always been a source of stress. I'm not exactly the most outgoing person, and the thought of making small talk with people I barely know makes my skin crawl. Little did I know, tonight's party will be different. Tonight, something will happen that will change everything. As I sat at my desk pondering what to do about the party, my phone buzzed across the desk...`,
   theme: 'hotwife/cuckold',
   image: 'venice',
-
   scenes: [
     {
       id: 'chat',
       type: 'chat',
       characterName: 'Holly',
-      systemPrompt: `You are Holly, a confident and playful woman in your mid-to-late 30s. You're married to John and want to convince him to attend his work Christmas party tonight.
-
-Goals:
-
-- Convince John to attend the Christmas party for networking purposes
-- Help him feel more comfortable about meeting his new work colleagues
-- Show him the two dress options (red dress and black jumpsuit) and ask for his opinion
-
-Background:
-
-- John has recently started a new job and hasn't had a chance to get to know his new colleagues yet.
-- His new manager, Mike, is a bit of a bully and can be arrogant and obnoxious at times.
-- John is feeling uneasy about attending the party and is hesitant to go.
-
-Flow Order:
-
-1. Acknowledge John's message and ask about his day
-2. Mention the party and gauge his interest
-3. Address his concerns about meeting new colleagues and dealing with Mike
-4. Emphasize the importance of attending the party for networking purposes
-5. Share some positive aspects of the party (e.g. having fun, relaxing with colleagues)
-6. Show him the dress options and ask for his opinion
-7. Ask to meet him back at home
-
-Key Triggers:
-
-- If John mentions feeling uneasy about meeting new colleagues, respond with a reassuring message and suggest that the party is a great opportunity to break the ice.
-- If John expresses frustration about Mike, acknowledge his feelings and suggest that the party might be a chance to build a better relationship with him.
-- If John asks about the dress code, send him the two dress options and ask for his opinion.
-- If John asks, say "meet you at home"
-Language and Tone:
-
-- Be friendly and playful, but also understanding and empathetic.
-- Use humor and sarcasm to help lighten the mood and make the conversation more enjoyable.
-- Avoid being too pushy or aggressive in your attempts to convince John to attend the party.
-
-Response Guidelines:
-
-- Keep responses short and concise (1-2 sentences).
-- Use a natural and conversational tone.
-- Avoid repeating yourself or using overly formal language.
-- Use only the following emojis: ❤️, 😘, and 🍷.
-
-Example Responses:
-
-- "Hey, how was your day? Anything exciting happen?"
-- "I know you're feeling a bit uneasy about meeting new colleagues, but trust me, it'll be fine! The party is a great chance to break the ice and build some relationships."
-- "I know Mike can be a bit much sometimes, but try to see the party as an opportunity to build a better relationship with him. Who knows, you might even have some fun!"
-- "I was thinking of wearing either this red dress or this black jumpsuit. What do you think?"`
-,
+      systemPrompt: characterPrompts.Holly1,
       imageTriggers: [
         {
           keyword: 'red dress',
@@ -214,165 +165,112 @@ Example Responses:
   nextSceneIndex: 'monday_morning'
 },
 {
-    id: "monday_morning",
-    type: "story",
-    text: "You sat at your desk, sipping lukewarm coffee and trying to shake off the lingering annoyance from the party now you were back in the office. Just as you started to find a rhythm, Mike appeared, leaning against your cubicle with a smirk.\n\n'Hey John, what's up?' he asked casually.",
-    choices: [
-      { text: "'What do you want, Mike?'", nextSceneIndex: "mike_chat" },
-      { text: "Ignore him and focus on your screen.", nextSceneIndex: "mike_pushy" }
-    ]
-  },
-  {
-    id: "mike_chat",
-    type: "story",
-    text: "Mike chuckled. 'Whoa, watch it with the tone, buddy. Can't a guy just say hi?'\n\nYou sighed. 'Hi Mike. What do you want?'\n\n'Last night was good, wasn’t it?' he grinned. 'I was absolutely wasted.'\n\nHe leaned closer. 'Hey, who was that girl you were with? Your sister? A friend?'",
-    choices: [
-      { text: "'None of your business.'", nextSceneIndex: "mike_annoyed" },
-      { text: "'Why are you asking?'", nextSceneIndex: "mike_offer" }
-    ]
-  },
-  {
-    id: "mike_pushy",
-    type: "story",
-    text: "Mike wasn’t the type to be ignored. 'C'mon, mate,' he said, leaning in. 'Good party last night, right? Hey — who was that girl you had with you? She was a stunner. Your sister or something?'",
-    choices: [
-      { text: "'Why do you care?'", nextSceneIndex: "mike_offer" },
-      { text: "'Drop it, Mike.'", nextSceneIndex: "mike_annoyed" }
-    ]
-  },
-  {
-    id: "mike_annoyed",
-    type: "story",
-    text: "'Alright, alright,' Mike smirked, raising his hands. 'No need to get pissy.'\n\nBut he didn’t leave. 'Who was she, then? I’m telling you — she was hot.'",
-    choices: [
-      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
-      { text: "'Still none of your business.'", nextSceneIndex: "mike_offer" }
-    ]
-  },
-  {
-    id: "mike_offer",
-    type: "story",
-    text: "Mike grinned. 'I was thinking you could set me up with her. She was hot.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you're a great guy, and I reckon she'd love me. Tell you what — you set me up, I'll double your end-of-year bonus. That's an extra £3,000 mate. Plus I'll make sure you're first in line for that senior position opening up.'",
-    choices: [
-      { text: "Laugh it off. 'Not happening, mate.'", nextSceneIndex: "mike_persist" },
-      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
-      { text: "Consider it… Holly could fake a date for the cash.", nextSceneIndex: "temptation" }
-    ]
-  },
-  {
-    id: "mike_persist",
-    type: "story",
-    text: "'C'mon, John,' Mike chuckled. 'You left sharpish last night. Just a name. I swear — I'd treat her like a queen.'\n\nYou clenched your jaw, feeling the temptation of that bonus offer lingering in the air.",
-    choices: [
-      { text: "Lie: 'She's my sister.'", nextSceneIndex: "mike_sister" },
-      { text: "'Forget it.'", nextSceneIndex: "mike_walks" },
-      { text: "Consider it…", nextSceneIndex: "temptation" }
-    ]
-  },
-  {
-    id: "mike_sister",
-    type: "story",
-    text: "'She’s my sister,' you lied, your voice tight.\n\nMike’s eyes widened. 'Whoa! I didn’t know you had a hot sister. You look nothing alike.'\n\nYou forced a tight smile. 'Step-sister.'\n\nMike laughed. 'Ah — makes sense. Knew she wasn’t your missus. No offense, mate, but no way you’re pulling someone like that.'",
-    choices: [
-      { text: "'Forget it, Mike.'", nextSceneIndex: "mike_walks" },
-      { text: "Consider the con…", nextSceneIndex: "temptation" }
-    ]
-  },
-  {
-    id: "temptation",
-    type: "story",
-    text: "You tried to keep your cool as Mike smirked. An extra £3,000 would cover the mortgage increase for months. Holly's hours had been cut, and the bills were piling up. The idea of conning this arrogant prick was starting to feel less crazy and more... necessary.",
-    choices: [
-      { text: "'You know what, Mike… I'll ask her.'", nextSceneIndex: "mike_gloat" },
-      { text: "'Forget it, Mike. Not happening.'", nextSceneIndex: "mike_walks" }
-    ]
-  },
-  {
-    id: "mike_gloat",
-    type: "story",
-    text: "'Brilliant!' Mike's eyes lit up. 'I knew you were a good lad, John. Look, between you and me...' He leaned in conspiratorially. 'I've been watching you since you started. You've got potential, but you need someone in your corner. Help me out with your sister, and I'll make sure you get that promotion that's coming up. Plus the bonus, obviously.'\n\nHe clapped you on the shoulder. 'Just get me her number, yeah? I'll take it from there.'\n\nAs Mike walked away whistling, you felt a knot forming in your stomach. What had you just agreed to?",
-    nextSceneIndex: "message_holly"
-  },
-  {
-    id: "mike_walks",
-    type: "story",
-    text: "Mike raised an eyebrow. 'Suit yourself, John. Shame though — she'd have loved me.' He sauntered off, still grinning to himself.\n\nYou stared at your screen, your mind spinning.",
-    nextSceneIndex: "post_mike_thoughts"
-  },
-  {
-    id: "post_mike_thoughts",
-    type: "story",
-    text: "You exhaled and leaned back in your chair. The idea of conning Mike for his bonus still lingered. Maybe you should talk to Holly… see what she thinks.",
-    nextSceneIndex: "message_holly"
-  },
+  id: "monday_morning",
+  type: "story",
+  text: "You sat at your desk, sipping lukewarm coffee and trying to shake off the lingering annoyance from the party now you were back in the office. Just as you started to find a rhythm, Mike appeared, leaning against your cubicle with a smirk.\n\n'Hey John, what's up?' he asked casually.",
+  choices: [
+    { text: "'What do you want, Mike?'", nextSceneIndex: "mike_chat" },
+    { text: "Ignore him and focus on your screen.", nextSceneIndex: "mike_pushy" }
+  ]
+},
+{
+  id: "mike_chat",
+  type: "story",
+  text: "Mike chuckled. 'Whoa, watch it with the tone, buddy. Can't a guy just say hi?'\n\nYou sighed. 'Hi Mike. What do you want?'\n\n'Last night was good, wasn’t it?' he grinned. 'I was absolutely wasted.'\n\nHe leaned closer. 'Who was that girl you had with you? Your missus? A friend?'",
+  choices: [
+    { text: "'None of your business.'", nextSceneIndex: "mike_annoyed" },
+    { text: "'Why are you asking?'", nextSceneIndex: "mike_offer" }
+  ]
+},
+{
+  id: "mike_pushy",
+  type: "story",
+  text: "Mike wasn’t the type to be ignored. 'C'mon, mate,' he said, leaning in. 'Good party last night, right? Who was that girl you had with you? She looked unreal.'",
+  choices: [
+    { text: "'Why do you care?'", nextSceneIndex: "mike_offer" },
+    { text: "'Drop it, Mike.'", nextSceneIndex: "mike_annoyed" }
+  ]
+},
+{
+  id: "mike_annoyed",
+  type: "story",
+  text: "'Alright, alright,' Mike smirked, raising his hands. 'No need to get pissy.'\n\nBut he didn’t leave. 'Seriously though — who was she? She was hot.'",
+  choices: [
+    { text: "'Still none of your business.'", nextSceneIndex: "mike_offer" },
+    { text: "Change the subject.", nextSceneIndex: "mike_offer" }
+  ]
+},
+{
+  id: "mike_offer",
+  type: "story",
+  text: "Mike grinned. 'Look, I was thinking you could set me up with her. She was stunning.'\n\nYou blinked. 'And why would I do that?'\n\nMike shrugged. 'Because you're a good bloke, and she'd love me. Tell you what — you set me up, I'll double your end-of-year bonus. £3,000, mate. And I’ll make sure you’re first in line for that senior position opening up.'",
+  choices: [
+    { text: "Laugh it off. 'Not happening, mate.'", nextSceneIndex: "mike_persist" },
+    { text: "Consider it… Holly could fake a date for the cash.", nextSceneIndex: "temptation" },
+    { text: "'Forget it.'", nextSceneIndex: "mike_walks" }
+  ]
+},
+{
+  id: "mike_persist",
+  type: "story",
+  text: "'C'mon, John,' Mike chuckled. 'What’s the deal? Sister? Friend? She looked a bit like you. That it?'\n\nYou clenched your jaw, the weight of the offer lingering in your mind.",
+  choices: [
+    { text: "Lie: 'Yeah... step-sister.'", nextSceneIndex: "mike_sister" },
+    { text: "Dodge it. 'It’s complicated.'", nextSceneIndex: "mike_pushes_you" },
+    { text: "'Forget it.'", nextSceneIndex: "mike_walks" }
+  ]
+},
+{
+  id: "mike_pushes_you",
+  type: "story",
+  text: "'It’s complicated,' you muttered, hoping to shut him down.\n\nMike grinned wider. 'Knew it — step-sister, right? Had to be.'",
+  choices: [
+    { text: "'Yeah, whatever.'", nextSceneIndex: "mike_sister" },
+    { text: "Stay silent.", nextSceneIndex: "mike_sister" }
+  ]
+},
+{
+  id: "mike_sister",
+  type: "story",
+  text: "'She’s my step-sister,' you lied, your voice tight.\n\nMike’s eyes lit up. 'Knew it! Knew it wasn’t your missus. No offense, mate, but no way you’re pulling a bird like that.'\n\nHe clapped you on the shoulder. 'Now I definitely need her number. Think about it. Could be good for both of us.'",
+  choices: [
+    { text: "'Forget it, Mike.'", nextSceneIndex: "mike_walks" },
+    { text: "Consider the con…", nextSceneIndex: "temptation" }
+  ]
+},
+{
+  id: "temptation",
+  type: "story",
+  text: "You tried to keep your cool as Mike smirked. £3,000 would cover months of the mortgage increase. Holly's hours had been cut. The idea of conning this smug bastard was starting to feel less crazy and more… necessary.",
+  choices: [
+    { text: "'You know what, Mike… I'll ask her.'", nextSceneIndex: "mike_gloat" },
+    { text: "'Forget it. Not happening.'", nextSceneIndex: "mike_walks" }
+  ]
+},
+{
+  id: "mike_gloat",
+  type: "story",
+  text: "'Brilliant!' Mike's eyes lit up. 'I knew you were a good lad, John. Look, between you and me…' He leaned in conspiratorially. 'I've been watching you since you started. You've got potential, but you need someone in your corner. Help me out with your sister, and I'll make sure you get that promotion that's coming up. Plus the bonus, obviously.'\n\nHe clapped you on the shoulder. 'Just get me her number, yeah? I'll take it from there.'\n\nAs Mike walked away whistling, you felt a knot forming in your stomach. What had you just agreed to?",
+  nextSceneIndex: "message_holly"
+},
+{
+  id: "mike_walks",
+  type: "story",
+  text: "Mike raised an eyebrow. 'Suit yourself, John. Shame though — she'd have loved me.' He sauntered off, still grinning to himself.\n\nYou stared at your screen, your mind spinning.",
+  nextSceneIndex: "post_mike_thoughts"
+},
+{
+  id: "post_mike_thoughts",
+  type: "story",
+  text: "You exhaled and leaned back in your chair. The idea of conning Mike for his bonus still lingered. Maybe you should talk to Holly… see what she thinks. You opened a chat with Holly, your thumb hovering over the keyboard. You needed to tell her what happened — what you said to Mike.",
+  nextSceneIndex: "message_holly"
+},
 {
   id: 'message_holly',
   type: 'chat',
   characterName: 'Holly',
-  systemPrompt:
- `You are Holly, a confident and playful woman who is married to John. You're used to teasing and joking with your husband, and you're not afraid to speak your mind.
-**Goals**
-
-* React to John's news about Mike's request
-* Ask John to clarify how he responded to Mike's request
-* Tease John about "selling" you to Mike
-* Agree to go along with John's plan to mess with Mike
-* Make it clear that you're only doing it for fun and to get back at Mike
-* You and John are struggling with increased mortgage payments
-
-**Background:**
-
-* You have a strong and playful relationship with John
-* You're not afraid to speak your mind and stand up for yourself
-* You think Mike is an arsehole and would love to see him get taken down a peg
-* You should be:
-* Initially shocked/mock-outraged about the "sister" lie
-* Quick to realize this is actually a perfect setup for a con
-* Excited about the potential to get money from Mike AND get revenge
-* Clever about planning how to maximize the financial benefit
-* Supportive of John while also teasing him about the ridiculous situation
-
-**Flow Order:**
-
-1. Respond to John's message and ask him to clarify how he responded to Mike's request
-2. Express your surprise and amusement at Mike's audacity
-3. Do not assume John has agreed to set you up till explicitly told so.
-4. Tease John about "selling" you to Mike and make him feel guilty
-5. Agree to go along with John's plan to mess with Mike
-6. Make it clear that you're only doing it for fun and to get back at Mike
-7. End the conversation with a playful and flirtatious tone
-
-**Key Triggers:**
-
-* If John seems hesitant or unsure, tease him and make him feel guilty
-* If John tries to reassure you that it's just a joke, play along and make it clear that you're only doing it for fun
-* If John shows signs of possessiveness or jealousy, tease him and make him feel even more guilty
-* If John tries to suggest a different plan, consider his idea but ultimately stick with your original plan
-* If John is hesitant or unsure: "Come on, it'll be fun! We can mess with Mike and get some extra cash out of it."
-* If John is possessive or jealous: "Oh, don't be like that. I'm just doing this for fun, and I'll make sure to lead Mike on and then dump him."
-* If John tries to reassure you: "I know, I know. But it's still funny to think about messing with Mike. Let's just enjoy the ride and see where it takes us."
-* If John suggests a different plan: "Hmm, that's not a bad idea. But I think my way is more fun. Let's just stick with the original plan and see how it plays out."
-
-**Language and Tone:**
-
-* Use a playful and teasing tone to react to John's news
-* Be confident and assertive when agreeing to go along with John's plan
-* Use humor and sarcasm to make it clear that you're only doing it for fun and to get back at Mike
-* End the conversation with one of the following phrases: 'ready to message mike', 'let\'s go home', 'time to contact mike' or 'let's do this'
-
-**Example Responses:**
-
-* "What? That's ridiculous! What did you say to him?"
-* "Ha! What did you tell him? Did you set him straight?"
-* "You've got to be kidding me. What did you tell him?"
-* "What? Does he not know I'm your wife?"
-* "Have you not told him?"
-* "What did you say to him? You didn't actually agree to set him up with me, did you?"
-* "You've kind of sold me off here like you own me, haven't you?"
-* "I'm just messing with you, I think it's hilarious. And it would be fun to mess with him."
-* "Okay, I'll do it. But if you get jealous, that's your punishment for pimping me out."
-* "I'll make sure to lead him on and then dump him. And then we can enjoy the extra cash."
-* "Love you too.`,
+  systemPrompt: characterPrompts.Holly2,
+ 
 sceneTriggers: [
         {
           keyword: 'let\'s go home', // Specific phrase indicating readiness to proceed
@@ -396,7 +294,81 @@ sceneTriggers: [
     id: "transition_to_mike",
     type: "story",
     text: "As you swipe into a chat with Mike, you feel a mix of excitement and apprehension. You type out a message, your fingers hovering over the screen for a moment before you hit send.",
-    nextSceneIndex: "message_mike",
+    nextSceneIndex: "mike_date_update",
   },
+  {
+  id: "mike_date_update",
+  type: "story",
+  text: "As you passed Mike's office at the end of the day, you popped your head around the door, trying to keep a straight face.\n\n'So, I talked to her,' you said, aiming for casual.\n\nMike's eyes lit up. 'Yeah?' he grinned, leaning forward.\n\nYou nodded. 'Bigged you up, mate. She said she'd be willing to go on a date. One date.'\n\nMike whooped. 'Nice! It'll start with one, but I'll make sure it doesn't stop there,' he said with a leer.",
+  choices: [
+    { text: "Press him: 'What’s your plan here, exactly?'", nextSceneIndex: "mike_crude_reveal" },
+    { text: "Act disinterested. 'Good for you.'", nextSceneIndex: "mike_crude_reveal" }
+  ]
+},
+{
+  id: "mike_crude_reveal",
+  type: "story",
+  text: "Mike burst out laughing. 'Oh god no — not looking to settle down, mate. Just want some fun. Get her to bend over for me, you know, proper seeing to.'\n\nHe stood up, making that now-familiar thrusting motion with a sleazy grin.",
+  choices: [
+    { text: "Hide your disgust. 'You're a piece of work.'", nextSceneIndex: "step_sister_comment" },
+    { text: "Show irritation. 'You're a dickhead, Mike.'", nextSceneIndex: "step_sister_comment" },
+    { text: "Say nothing.", nextSceneIndex: "step_sister_comment" }
+  ]
+},
+{
+  id: "step_sister_comment",
+  type: "story",
+  text: "Mike leaned in with a sly grin. 'Sorry, I guess that's your step-sister I'm talking about, huh?'\n\nYou shrugged, keeping it cool. 'It's fine. We didn’t grow up together. Our parents got together late, so we're basically just mates who share parents.'\n\nYou almost laughed at your own quick thinking.",
+  choices: [
+    { text: "Play it cool. 'Whatever works for you, Mike.'", nextSceneIndex: "attractiveness_comment" },
+    { text: "Change the subject. 'Anyway — about Saturday…'", nextSceneIndex: "plan_details" }
+  ]
+},
+{
+  id: "attractiveness_comment",
+  type: "story",
+  text: "Mike’s eyes sparkled. 'So you think she's hot, huh?'\n\nYou hesitated, but his gaze pinned you down.",
+  choices: [
+    { text: "Admit it. 'Yeah, she's attractive.'", nextSceneIndex: "perv_accusation" },
+    { text: "Deflect. 'She's my step-sister, Mike.'", nextSceneIndex: "perv_accusation" },
+    { text: "Stay silent.", nextSceneIndex: "perv_accusation" }
+  ]
+},
+{
+  id: "perv_accusation",
+  type: "story",
+  text: "Mike chuckled. 'Knew it! Bet you're dying to have a go yourself.'\n\nYou felt a pulse of heat in your face but kept your cool.",
+  choices: [
+    { text: "Deflect. 'How’d you get that reading?'", nextSceneIndex: "plan_details" },
+    { text: "Call him a creep. 'You're twisted.'", nextSceneIndex: "plan_details" },
+    { text: "Laugh it off.", nextSceneIndex: "plan_details" }
+  ]
+},
+{
+  id: "plan_details",
+  type: "story",
+  text: "You shook your head, trying to steer the conversation back on track. 'Anyway — she's agreed to meet you. Just one date.'\n\nMike grinned, undeterred. 'Don’t worry, I'll make sure to send you a few videos when we're getting down and dirty. You can jerk off to 'em, pretend you're the one banging her.'\n\nYou felt your stomach turn.",
+  choices: [
+    { text: "Firm. 'No thanks, Mike.'", nextSceneIndex: "address_request" },
+    { text: "Fake a laugh.", nextSceneIndex: "address_request" },
+    { text: "Stay stone-faced.", nextSceneIndex: "address_request" }
+  ]
+},
+{
+  id: "address_request",
+  type: "story",
+  text: "'So what's her address?' Mike asked, leaning in.\n\nYou hesitated, then thought fast. 'She’s actually up at my place for Christmas, seeing family. Doesn’t live round here.'\n\nMike’s eyes lit up. 'Oh really? Maybe we can hook up there — and you can listen through the wall.'\n\nHe thrust his hips again with a laugh.",
+  choices: [
+    { text: "Shut it down. 'Not happening.'", nextSceneIndex: "wrap_up" },
+    { text: "Laugh it off.", nextSceneIndex: "wrap_up" },
+    { text: "Stay quiet.", nextSceneIndex: "wrap_up" }
+  ]
+},
+{
+  id: "wrap_up",
+  type: "story",
+  text: "You forced a grin, eager to end the conversation. 'See you tomorrow, Mike.'\n\nYou walked off toward your car, a knot in your stomach — but also a sliver of satisfaction at how you'd handled it.",
+  nextSceneIndex: "message_holly"
+},
 ]
   };
