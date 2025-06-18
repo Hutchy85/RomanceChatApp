@@ -20,6 +20,7 @@ export interface Scene {
   sceneTriggers?: SceneTrigger[]; // for chat scenes
   choices?: Choice[]; // for story scenes
   nextSceneIndex?: string; // for story scenes
+  effects?: Partial<CharacterStats>; // for story scenes
 }
 
 export interface ImageTrigger {
@@ -35,6 +36,8 @@ export interface SceneTrigger {
 export interface Choice {
   text: string;
   nextSceneIndex?: string;
+  effects?: Partial<CharacterStats>;
+  consequences?: string[];
 }
 
 /* Removed duplicate Scene interface definition to resolve duplicate identifier error */

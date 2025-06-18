@@ -32,11 +32,11 @@ export const christmasGift: Story = {
     {
       id: 'partyArrival',
       type: 'story',
-      text: "The party was in full swing. Fairy lights flickered... (rest of text)",
-      choices: [
-        { text: "Laugh quietly and agree.", nextSceneIndex: 'party_scene_2a' },
-        { text: "Stay quiet, unsure how to respond.", nextSceneIndex: 'party_scene_2b' },
-        { text: "Say you want to leave already.", nextSceneIndex: 'party_scene_leave_early_check' },
+      text: "The party was in full swing. Fairy lights flickered around the room, and 'Jingle Bell Rock' filled the air. You stood by the drinks table, trying to smile as your coworkers told the same old office stories. Holly was radiant in a red dress, laughing easily with the other wives, her presence lighting up the room. Your boss, Mike, stood loudly holding court in the middle of the room, already half-cut. Holly leaned in. 'Wow, what an arsehole,' she whispered.",
+  choices: [
+        { text: "Laugh quietly and agree.", nextSceneIndex: 'party_scene_2a', effects: { respect: +2, affection: +1 } },
+        { text: "Stay quiet, unsure how to respond.", nextSceneIndex: 'party_scene_2b', effects: { respect: -1, affection: +1 } },
+        { text: "Say you want to leave already.", nextSceneIndex: 'party_scene_leave_early_check', effects: { respect: -2, affection: -1 } },
       ],
     },
 
@@ -59,9 +59,18 @@ export const christmasGift: Story = {
       type: 'story',
       text: "'Hi Mike,' you said, but he barely acknowledged you...",
       choices: [
-        { text: "Confront Mike immediately.", nextSceneIndex: 'party_scene_confront' },
-        { text: "Stay silent and let Holly deal with it.", nextSceneIndex: 'party_scene_holly_handles' },
-      ],
+  {
+    text: "Confront Mike immediately.",
+    nextSceneIndex: 'party_scene_confront',
+    effects: { respect: +2, trust: +2 }
+  },
+  {
+    text: "Stay silent and let Holly deal with it.",
+    nextSceneIndex: 'party_scene_holly_handles',
+    effects: { affection: -1, respect: -2 }
+  },
+],
+
     },
 
     {
@@ -108,6 +117,8 @@ export const christmasGift: Story = {
       type: 'story',
       text: "'I should've punched him,' you grumbled...",
       nextSceneIndex: 'party_scene_leave',
+      effects: { trust: +2, respect: +2 }
+
     },
 
     {
@@ -115,9 +126,18 @@ export const christmasGift: Story = {
       type: 'story',
       text: "'I kinda wanna leave already,' you admitted...",
       choices: [
-        { text: "'Yeah, let's stick it out a bit longer.'", nextSceneIndex: 'party_scene_2a' },
-        { text: "'Nah, let's just go.'", nextSceneIndex: 'party_scene_leave' },
-      ],
+  {
+    text: "'Yeah, let's stick it out a bit longer.'",
+    nextSceneIndex: 'party_scene_2a',
+    effects: { respect: +1 }
+  },
+  {
+    text: "'Nah, let's just go.'",
+    nextSceneIndex: 'party_scene_leave',
+    effects: { affection: +1, respect: -1 }
+  },
+]
+
     },
 {
   id: 'drive_home',
@@ -130,15 +150,18 @@ export const christmasGift: Story = {
   type: 'story',
   text: "You eventually made your way upstairs. The bedroom was dimly lit by the glow of fairy lights strung around the window. Holly was already in bed, her hair damp from the shower, scrolling through her phone. She looked up as you entered. 'Hey,' she said softly. There was a strange, charged quiet between you. The events of the night lingered like static in the air. 'You okay?' you asked. Holly hesitated, then set her phone aside. 'Yeah,' she murmured. 'Just... one of those nights.' She patted the space beside her. 'Come to bed.'",
   choices: [
-    {
-      text: "Slide into bed and hold her close.",
-      nextSceneIndex: 'bed_cuddle'
-    },
-    {
-      text: "Sit on the edge of the bed, unsure how to start a conversation.",
-      nextSceneIndex: 'bed_tension'
-    }
-  ]
+  {
+    text: "Slide into bed and hold her close.",
+    nextSceneIndex: 'bed_cuddle',
+    effects: { affection: +3, trust: +2 }
+  },
+  {
+    text: "Sit on the edge of the bed, unsure how to start a conversation.",
+    nextSceneIndex: 'bed_tension',
+    effects: { affection: -1, trust: -2 }
+  }
+]
+
 },
 {
   id: 'bed_cuddle',

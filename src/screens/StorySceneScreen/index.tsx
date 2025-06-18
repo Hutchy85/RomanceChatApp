@@ -9,6 +9,9 @@ import { commonStyles } from '../../styles';
 import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
 
+// Import CharacterStats type
+import type { CharacterStats } from '../../types'; // Adjust the path if needed
+
 
 type StorySceneRouteProp = RouteProp<RootStackParamList, 'StoryScene'>;
 type StorySceneNavigationProp = StackNavigationProp<RootStackParamList, 'StoryScene'>;
@@ -21,6 +24,7 @@ type Props = {
 const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   const { storyId, sceneId, sessionId, isPrologue } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const { updateCharacterStats } = useSessionNavigation();
   
   const {
     currentSession,
@@ -79,49 +83,67 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle choice selection with session recording
   const handleChoiceSelection = async (choice: any, choiceIndex: number) => {
-    if (!currentSession) {
-      Alert.alert('Error', 'No active session found');
-      return;
-    }
+  if (!currentSession) {
+    Alert.alert('Error', 'No active session found');
+    return;
+  }
 
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      // Record the choice in the session
-      await storySessionManager.recordChoice(currentSession.id, {
-        id: `${sceneId}_${choiceIndex}_${Date.now()}`,
-        sceneId: sceneId || 'prologue',
-        choiceIndex,
-        choiceText: choice.text,
-        consequences: choice.consequences || [],
+    // Record the choice in the session (still keeping consequences in case you want it for logs)
+    await storySessionManager.recordChoice(currentSession.id, {
+      id: `${sceneId}_${choiceIndex}_${Date.now()}`,
+      sceneId: sceneId || 'prologue',
+      choiceIndex,
+      choiceText: choice.text,
+      effects: choice.effects || {},  // record effects here now
+    });
+
+    // 👉 Apply character stat effects if any
+    if (choice.effects) {
+      const updates: Partial<CharacterStats> = {};
+
+      // Loop over each key in effects object
+      Object.entries(choice.effects).forEach(([type, delta]) => {
+        if (currentSession.characterStats && type in currentSession.characterStats) {
+          const currentValue = currentSession.characterStats[type as keyof CharacterStats] || 0;
+          let newValue = Number(currentValue) + (delta as number);
+          newValue = Math.max(0, Math.min(100, newValue)); // clamp 0-100
+          updates[type as keyof CharacterStats] = newValue;
+        }
       });
 
-      // Navigate to next scene
-      if (choice.nextSceneIndex !== undefined && choice.nextSceneIndex !== null) {
-        const nextScene = story?.scenes.find(s => s.id === choice.nextSceneIndex);
-        if (nextScene) {
-          if (nextScene.type === 'chat') {
-            navigation.navigate('Chat', { 
-              storyId, 
-              sceneId: nextScene.id, 
-              sessionId: currentSession.id 
-            });
-          } else {
-            navigation.navigate('StoryScene', { 
-              storyId, 
-              sceneId: nextScene.id, 
-              sessionId: currentSession.id 
-            });
-          }
+      console.log("Applying character stat updates:", updates);
+      await updateCharacterStats(updates);
+    }
+
+    // Navigate to next scene
+    if (choice.nextSceneIndex !== undefined && choice.nextSceneIndex !== null) {
+      const nextScene = story?.scenes.find(s => s.id === choice.nextSceneIndex);
+      if (nextScene) {
+        if (nextScene.type === 'chat') {
+          navigation.navigate('Chat', {
+            storyId,
+            sceneId: nextScene.id,
+            sessionId: currentSession.id,
+          });
+        } else {
+          navigation.navigate('StoryScene', {
+            storyId,
+            sceneId: nextScene.id,
+            sessionId: currentSession.id,
+          });
         }
       }
-    } catch (error) {
-      console.error('Failed to record choice:', error);
-      Alert.alert('Error', 'Failed to save your choice');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Failed to record choice:', error);
+    Alert.alert('Error', 'Failed to save your choice');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Handle continue button (for scenes without explicit choices)
   const handleContinue = async () => {
