@@ -297,41 +297,35 @@ export const christmasGift: Story = {
 sceneTriggers: [
         {
           keyword: 'let\'s go home', // Specific phrase indicating readiness to proceed
-          nextSceneIndex: 'transition_to_mike',
+          nextSceneIndex: "mike_date_update",
         },
         {
           keyword: 'ready to message mike', // Clear intent to move forward
-          nextSceneIndex: 'transition_to_mike',
+          nextSceneIndex: "mike_date_update",
         },
         {
           keyword: 'time to contact mike', // Alternative phrasing
-          nextSceneIndex: 'transition_to_mike',
+          nextSceneIndex: "mike_date_update",
         },
         {
           keyword: 'let\'s do this', // More casual trigger
-          nextSceneIndex: 'transition_to_mike',
-        },
-      ],
-   },
-   {
-    id: "transition_to_mike",
-    type: "story",
-    text: "As you swipe into a chat with Mike, you feel a mix of excitement and apprehension. You type out a message, your fingers hovering over the screen for a moment before you hit send.",
-    nextSceneIndex: "mike_date_update",
+          nextSceneIndex: "mike_date_update",
   },
+      ],
+    },
   {
   id: "mike_date_update",
   type: "story",
   text: "As you passed Mike's office at the end of the day, you popped your head around the door, trying to keep a straight face.\n\n'So, I talked to her,' you said, aiming for casual.\n\nMike's eyes lit up. 'Yeah?' he grinned, leaning forward.\n\nYou nodded. 'Bigged you up, mate. She said she'd be willing to go on a date. One date.'\n\nMike whooped. 'Nice! It'll start with one, but I'll make sure it doesn't stop there,' he said with a leer.",
   choices: [
-    { text: "Press him: 'What’s your plan here, exactly?'", nextSceneIndex: "mike_crude_reveal" },
-    { text: "Act disinterested. 'Good for you.'", nextSceneIndex: "mike_crude_reveal" }
+    { text: "Press him: 'What’s your plan here, exactly? You wanting to date her?'", nextSceneIndex: "mike_crude_reveal" },
+    { text: "Be protective: 'She won't date you mate, this is a favour.'", nextSceneIndex: "mike_crude_reveal" }
   ]
 },
 {
   id: "mike_crude_reveal",
   type: "story",
-  text: "Mike burst out laughing. 'Oh god no — not looking to settle down, mate. Just want some fun. Get her to bend over for me, you know, proper seeing to.'\n\nHe stood up, making that now-familiar thrusting motion with a sleazy grin.",
+  text: "Mike burst out laughing. 'Oh god no — I'm not looking to settle down, mate. Just want some fun. Get her to bend over for me, you know, proper seeing to.'\n\nHe stood up, making that now-familiar thrusting motion with a sleazy grin.",
   choices: [
     { text: "Hide your disgust. 'You're a piece of work.'", nextSceneIndex: "step_sister_comment" },
     { text: "Show irritation. 'You're a dickhead, Mike.'", nextSceneIndex: "step_sister_comment" },
