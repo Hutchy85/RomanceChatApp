@@ -1,5 +1,5 @@
 import { Story } from '../../../types';
-import imageMap from '../../imageMap';
+import { imageMap } from '../../imageMap';
 import { characterPrompts } from '../../characters';
 
 export const christmasGift: Story = {
@@ -27,13 +27,15 @@ export const christmasGift: Story = {
         { keyword: 'see you at home', nextSceneIndex: 'partyArrival' },
         { keyword: 'heading home now', nextSceneIndex: 'partyArrival' },
       ],
+      backgroundImageKey: 'default',
     },
 
     {
       id: 'partyArrival',
       type: 'story',
       text: "The party was in full swing. Fairy lights flickered around the room, and 'Jingle Bell Rock' filled the air. You stood by the drinks table, trying to smile as your coworkers told the same old office stories. Holly was radiant in a red dress, laughing easily with the other wives, her presence lighting up the room. Your boss, Mike, stood loudly holding court in the middle of the room, already half-cut. Holly leaned in. 'Wow, what an arsehole,' she whispered.",
-  choices: [
+      backgroundImageKey: 'default',
+      choices: [
         { text: "Laugh quietly and agree.", nextSceneIndex: 'party_scene_2a', effects: { respect: +2, affection: +1 } },
         { text: "Stay quiet, unsure how to respond.", nextSceneIndex: 'party_scene_2b', effects: { respect: -1, affection: +1 } },
         { text: "Say you want to leave already.", nextSceneIndex: 'party_scene_leave_early_check', effects: { respect: -2, affection: -1 } },

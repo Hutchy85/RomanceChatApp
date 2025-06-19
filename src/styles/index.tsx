@@ -70,6 +70,18 @@ export const shadows = StyleSheet.create({
 // Shared styles for containers, cards, buttons, etc.
 export const commonStyles = StyleSheet.create({
   // Layout
+
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    resizeMode: 'cover',
+    zIndex: -1,
+  },
+
+
   container: {
     flex: 1,
     backgroundColor: colors.background,

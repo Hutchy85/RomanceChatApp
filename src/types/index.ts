@@ -21,6 +21,7 @@ export interface Scene {
   choices?: Choice[]; // for story scenes
   nextSceneIndex?: string; // for story scenes
   effects?: Partial<CharacterStats>; // for story scenes
+  backgroundImageKey?: string; // optional background image key for scenes
 }
 
 export interface ImageTrigger {
@@ -51,7 +52,7 @@ export interface Story {
   theme: string;
   image: string;
   scenes: Scene[];
-  backgroundImage?: string;
+  backgroundImageKey?: string;
   musicTrack?: string;
 
 }

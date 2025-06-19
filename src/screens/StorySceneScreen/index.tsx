@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity, Alert, Image, StyleSheet } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,9 +8,11 @@ import { stories } from '../../data/stories/index';
 import { commonStyles } from '../../styles';
 import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
+import { backgroundImages } from '../../data/imageMap';
+
 
 // Import CharacterStats type
-import type { CharacterStats } from '../../types'; // Adjust the path if needed
+import type { CharacterStats, } from '../../types';
 
 
 type StorySceneRouteProp = RouteProp<RootStackParamList, 'StoryScene'>;
@@ -348,64 +350,66 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <>
-      <RelationshipStatusBar />
-      <SafeAreaView style={commonStyles.safeAreaContainer}>
-        <ScrollView contentContainerStyle={commonStyles.scrollContent}>
-          <View style={commonStyles.container}>
-            <Text style={commonStyles.coloredTitle}>{story.title}</Text>
-            
-            {/* Show session progress if available */}
-            {currentSession && (
-              <Text style={[commonStyles.paragraph, { fontSize: 12, opacity: 0.7 }]}>
-                Progress: {currentSession.scenesVisited.length} scenes visited • 
-                {currentSession.choices.length} choices made
-              </Text>
-            )}
-            
-            <Text style={commonStyles.paragraph}>{scene.text || 'No scene text provided.'}</Text>
+  <>
+    <RelationshipStatusBar />
+    <SafeAreaView style={commonStyles.safeAreaContainer}>
+      <Image
+  source={backgroundImages[scene.backgroundImageKey || 'default'] || backgroundImages.default}
+  style={commonStyles.backgroundImage}
+/>
+      
+      <ScrollView contentContainerStyle={commonStyles.scrollContent}>
+        <View style={commonStyles.container}>
+          <Text style={commonStyles.coloredTitle}>{story.title}</Text>
 
-            {/* Render choices */}
-            {scene.choices && scene.choices.length > 0 && (
-              <View>
-                {scene.choices.map((choice, idx) => (
-                  <TouchableOpacity 
-                    key={choice.text + idx} 
-                    style={[commonStyles.buttonPrimary, isLoading && { opacity: 0.5 }]}
-                    onPress={() => handleChoiceSelection(choice, idx)}
-                    disabled={isLoading}
-                  >
-                    <Text style={commonStyles.buttonText}>{choice.text}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+          {currentSession && (
+            <Text style={[commonStyles.paragraph, { fontSize: 12, opacity: 0.7 }]}>
+              Progress: {currentSession.scenesVisited.length} scenes visited • 
+              {currentSession.choices.length} choices made
+            </Text>
+          )}
 
-            {/* Continue button for scenes without explicit choices */}
-            {!scene.choices?.length && scene.nextSceneIndex !== undefined && (
-              <TouchableOpacity 
-                style={[commonStyles.buttonPrimary, isLoading && { opacity: 0.5 }]}
-                onPress={handleContinue}
-                disabled={isLoading}
-              >
-                <Text style={commonStyles.buttonText}>
-                  {isLoading ? 'Loading...' : 'Continue'}
-                </Text>
-              </TouchableOpacity>
-            )}
+          <Text style={commonStyles.paragraph}>{scene.text || 'No scene text provided.'}</Text>
 
+          {scene.choices && scene.choices.length > 0 && (
+            <View>
+              {scene.choices.map((choice, idx) => (
+                <TouchableOpacity 
+                  key={choice.text + idx} 
+                  style={[commonStyles.buttonPrimary, isLoading && { opacity: 0.5 }]}
+                  onPress={() => handleChoiceSelection(choice, idx)}
+                  disabled={isLoading}
+                >
+                  <Text style={commonStyles.buttonText}>{choice.text}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {!scene.choices?.length && scene.nextSceneIndex !== undefined && (
             <TouchableOpacity 
-              style={commonStyles.buttonOutline}
-              onPress={() => navigation.goBack()}
+              style={[commonStyles.buttonPrimary, isLoading && { opacity: 0.5 }]}
+              onPress={handleContinue}
               disabled={isLoading}
             >
-              <Text style={commonStyles.buttonTextOutline}>Go Back</Text>
+              <Text style={commonStyles.buttonText}>
+                {isLoading ? 'Loading...' : 'Continue'}
+              </Text>
             </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+          )}
+
+          <TouchableOpacity 
+            style={commonStyles.buttonOutline}
+            onPress={() => navigation.goBack()}
+            disabled={isLoading}
+          >
+            <Text style={commonStyles.buttonTextOutline}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  </>
   );
-};
+}
 
 export default StorySceneScreen;
