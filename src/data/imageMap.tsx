@@ -7,10 +7,8 @@ export const imageMap = {
   };
 
   export const backgroundImages: { [key: string]: any } = {
-  candlelitRoom: require('../assets/backgrounds/candlelit_room.jpg'),
-  snowyStreet: require('../assets/backgrounds/snowy_street.jpg'),
-  beachSunset: require('../assets/backgrounds/beach_sunset.jpg'),
-  citySkyline: require('../assets/backgrounds/city_skyline.jpg'),
+  snowyStreet: require('../assets/images/backgrounds/snowyStreet.png'),
   default: require('../assets/images/backgrounds/defaultImage.png'),
+  christmas: require('../assets/images/backgrounds/christmas.png'),
 };
   

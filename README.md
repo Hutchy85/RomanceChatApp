@@ -1,118 +1,140 @@
-# Romance Chat App - React Native Mobile Version
+# 📱 Romance Chat App
 
-This is a React Native mobile version of the Romance Chat App, a story-driven interactive romance chat application where users interact with an AI-powered version of their in-story wife.
+An interactive, narrative-driven chat game built with **React Native** and **TypeScript**. Players experience immersive romance stories through conversations, narrative scenes, and interactive choices that shape their relationships and story outcomes.
 
-## Features
+---
 
-- Story selection with multiple narrative options
-- Immersive prologue to set the scene
-- Interactive chat interface with AI-powered responses
-- Dynamic emotional state system that evolves based on conversation
-- Session saving and loading functionality
-- Offline support with fallback responses
+## ✨ Features
 
-## Technical Overview
+- 📖 **Story Selection**: Browse and select from available romance stories.
+- ✍️ **Prologue and Narrative Scenes**: Set the tone for your story with rich written prologues and narrative sequences.
+- 💬 **AI-Powered Chat Scenes**: Simulated chat interactions with characters, enhanced by dynamic mood and affection states.
+- 🎨 **Dynamic Backgrounds**: Each scene displays a tailored background image to match the mood and setting.
+- 📊 **Relationship Status Bar**: Tracks character stats like affection, trust, or respect in real-time.
+- 🖼️ **Character Avatars by Mood** (coming soon)
+- 💾 **Session Persistence**: Save player progress, visited scenes, and choices.
+- 🌐 **FastAPI Backend** (future integration) for advanced AI interactions and cloud-saved sessions.
 
-### Frontend
+---
 
-- React Native with Expo
-- TypeScript for type safety
-- React Navigation for screen navigation
-- Context API for state management
-- AsyncStorage for local persistence
+## 📸 Screenshots  
 
-### Backend Integration
+_Coming soon!_
 
-- Connects to the existing FastAPI backend
-- API client for handling all backend communication
-- Fallback responses when API is unavailable
+---
 
-## Installation
+## 🗂️ Project Structure  
 
-1. Install dependencies:
+src/
+├── assets/
+│ └── images/
+│ └── backgrounds/
+├── components/
+│ └── RelationshipStatusBar.tsx
+├── data/
+│ ├── imageMap.tsx
+│ ├── stories/
+│ └── christmasGift.ts
+├── navigation/
+├── screens/
+│ └── StorySceneScreen/
+│ └── ChatScreen/
+│ └── PrologueScreen/
+├── types/
+│ └── types.ts
+└── App.tsx
 
-```bash
-cd RomanceChatApp
+yaml
+Copy
+Edit
+
+---
+
+## 📦 Tech Stack  
+
+- **React Native (Expo)**
+- **TypeScript**
+- **React Navigation**
+- **AsyncStorage** (local session saving)
+- **FastAPI** (planned backend integration)
+- **Lottie** (planned animated backgrounds)
+- **Unsplash/Pexels images** for backgrounds
+
+---
+
+## 🚀 Getting Started  
+
+### 📥 Install Dependencies  
 npm install
-```
 
-2. Start the Expo development server:
+shell
+Copy
+Edit
 
-```bash
-npm start
-```
+### 📱 Run on Device (via Expo)
+npx expo start
 
-3. Run on Android/iOS simulator or scan the QR code with the Expo Go app
+yaml
+Copy
+Edit
 
-## Project Structure
+---
 
-```
-RomanceChatApp/
-├── App.tsx                  # Main application component
-├── src/
-│   ├── api/
-│   │   └── apiClient.ts     # API client for backend communication
-│   ├── components/          # Reusable UI components
-│   ├── context/
-│   │   └── AppContext.tsx   # Application state management
-│   ├── navigation/
-│   │   └── index.tsx        # Navigation configuration
-│   ├── screens/
-│   │   ├── StorySelectionScreen/
-│   │   │   └── index.tsx    # Story selection screen
-│   │   ├── PrologueScreen/
-│   │   │   └── index.tsx    # Story prologue screen
-│   │   └── ChatScreen/
-│   │       └── index.tsx    # Interactive chat screen
-│   └── types/
-│       └── index.ts         # TypeScript type definitions
-```
+## ✍️ Story Data Format  
 
-## Backend API Integration
+Each story is a TypeScript module exporting an object:
+```ts
+export const christmasGift = {
+  id: 'christmasGift',
+  title: 'A Christmas Gift',
+  prologue: 'It was a snowy December evening...',
+  scenes: [
+    {
+      id: 'scene_1',
+      text: 'You arrive at the party.',
+      backgroundImageKey: 'partyNight',
+      choices: [
+        { text: 'Say hello.', nextSceneIndex: 'scene_2' }
+      ]
+    }
+  ]
+};
+🎨 Dynamic Background Images
+Mapped in src/data/imageMap.tsx:
 
-The mobile app connects to the existing FastAPI backend using the following endpoints:
+ts
+Copy
+Edit
+export const backgroundImages = {
+  partyNight: require('../assets/images/backgrounds/partyNight.png'),
+  snowyStreet: require('../assets/images/backgrounds/snowyStreet.png'),
+  default: require('../assets/images/backgrounds/defaultImage.png')
+};
+Used inside StorySceneScreen:
 
-- `/api/generate_reply` - For AI responses
-- `/api/initial_state/{story_id}` - For story initialization
-- `/api/current_state/{session_id}` - For retrieving state
-- `/api/save_state/{session_id}` - For saving state
+tsx
+Copy
+Edit
+<Image
+  source={backgroundImages[scene.backgroundImageKey] || backgroundImages.default}
+  style={commonStyles.backgroundImage}
+/>
+📖 Future Roadmap
+ Animated background transitions (React Native Reanimated)
 
-The API client (`apiClient.ts`) handles all communication with these endpoints and provides fallback responses when the API is unavailable.
+ AI-generated dialogue via FastAPI backend
 
-## State Management
+ Character avatars that change with mood
 
-The application uses React Context API for state management. The `AppContext` provides:
+ Audio ambiance linked to backgrounds
 
-- Current story and emotional state
-- Message history
-- Saved sessions
-- Methods for initializing states, generating responses, and saving conversations
+ Profile management screen
 
-## Offline Support
+ Full save/load system with multiple save slots
 
-The app includes offline support with fallback responses when the API is unavailable:
+🧑‍💻 Author
+John Hutchinson (Communications Technician & Indie Developer)
 
-- Cached story data and initial states
-- Fallback response generation based on emotional state
-- AsyncStorage for persistent storage of conversations
+📄 License
+This project is licensed for personal and educational use.
 
-## Extending the Application
-
-### Adding New Stories
-
-1. Add new story data in the `StorySelectionScreen`
-2. Add prologue content in the `PrologueScreen`
-3. Add initial emotional state in the API client's fallback states
-
-### Customizing UI
-
-The app uses a consistent styling approach with a shared color palette:
-
-- Primary color: `#ff6b6b`
-- Secondary color: `#4ecdc4`
-- Background color: `#f9f9f9`
-- Text colors: `#333` (primary), `#777` (secondary)
-
-## License
-
-This project is licensed under the MIT License.

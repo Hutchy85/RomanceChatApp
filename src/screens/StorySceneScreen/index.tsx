@@ -287,7 +287,11 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
     const prologueContent = story.prologue;
     
     return (
-      <SafeAreaView style={commonStyles.safeAreaContainer}>
+        <SafeAreaView style={commonStyles.safeAreaContainer}>
+      <Image
+  source={backgroundImages.christmas || backgroundImages.default}
+  style={commonStyles.backgroundImage}
+/>
         <ScrollView contentContainerStyle={commonStyles.scrollContent}>
           <View style={commonStyles.container}>
             <Text style={commonStyles.coloredTitle}>{story.title}</Text>

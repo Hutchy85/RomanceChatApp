@@ -12,7 +12,7 @@ import { Message, Scene, UserProfile } from '../../types/index';
 import { stories } from '../../data/stories/index';
 import { storySessionManager } from '../../data/sessionstorage';
 import { useSessionNavigation } from '../../contexts/SessionNavigationContext';
-import imageMap from '../../data/imageMap';
+import { imageMap } from '../../data/imageMap';
 import { colors, commonStyles } from '../../styles';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
 import { useUserProfile } from '../../contexts/UserProfileContext';

@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { stories as importedStories } from '../../data/stories/index';
 import { Story, StorySession} from '../../types/index';
 import { storySessionManager } from '../../data/sessionstorage';
-import imageMap from '../../data/imageMap';
+import { imageMap }from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { commonStyles, enhancedStyles, } from '../../styles';
 import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';

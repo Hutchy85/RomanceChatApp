@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-
+import { LinearGradient } from 'expo-linear-gradient';
 // Import screens
 import StorySelectionScreen from '../screens/StorySelectionScreen';
 import StorySceneScreen from '../screens/StorySceneScreen';
@@ -13,8 +13,6 @@ import UserProfileScreen from '../screens/UserProfileScreen';
 import HeaderMenu from '../components/HeadderMenu'; // Import the header menu component
 import ProfileGate from '../screens/ProfileGateScreen'; // Import the profile gate screen
 import EditProfileScreen from '../screens/EditProfileScreen'; // Import the edit profile screen
-// Import session types
-import { StorySession } from '../data/sessionstorage';
 
 // Define the navigation parameters
 export type RootStackParamList = {
@@ -69,6 +67,9 @@ const Navigation = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: '#ff6b6b',
+            elevation: 0, // Android
+            shadowOpacity: 0, // iOS
+            borderBottomWidth: 0, // fallback
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -144,26 +145,36 @@ const Navigation = () => {
 
         {/* Story scene with session context */}
         <Stack.Screen 
-          name="StoryScene" 
-          component={StorySceneScreen} 
-          options={({ route }) => ({ 
-            title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
-            headerBackTitle: 'Sessions',
-            // Pass session context to the screen
-          })}
-        />
+  name="StoryScene" 
+  component={StorySceneScreen} 
+  options={({ route }) => ({ 
+    title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
+    headerBackTitle: 'Sessions',
+    headerBackground: () => (
+      <LinearGradient
+        colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
+        style={{ flex: 1 }}
+      />
+    ),
+  })}
+/>
 
         {/* Chat screen with session management */}
         <Stack.Screen
-          name="Chat"
-          component={ChatScreen}
-          options={({ route }) => ({
-            title: 'Chat',
-            headerBackTitle: 'Story',
-            headerLeft: () => null, // Prevent accidental navigation away
-            // You might want to add a save/pause button in headerRight
-          })}
-        />
+  name="Chat"
+  component={ChatScreen}
+  options={({ route }) => ({
+    title: 'Chat',
+    headerBackTitle: 'Story',
+    headerLeft: () => null,
+    headerBackground: () => (
+      <LinearGradient
+        colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
+        style={{ flex: 1 }}
+      />
+    ),
+  })}
+/>
 
         {/* Save management utilities */}
         <Stack.Screen

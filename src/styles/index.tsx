@@ -1,4 +1,6 @@
 import { StyleSheet, DimensionValue } from 'react-native';
+import { transparent } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
+import { backgroundImages } from '../data/imageMap';
 
 // Color palette
 export const colors = {
@@ -6,7 +8,7 @@ export const colors = {
   secondary: '#4ecdc4',
   tertiary: '#ffa502',
   success: '#4caf50',
-  background: '#f9f9f9',
+  background: 'transparent',
   white: '#fff',
   lightGray: '#f0f0f0',
   mediumGray: '#eaeaea',
@@ -79,6 +81,8 @@ export const commonStyles = StyleSheet.create({
     bottom: 0,
     resizeMode: 'cover',
     zIndex: -1,
+    width: '100%',
+    height: '100%',
   },
 
 
@@ -157,7 +161,7 @@ export const commonStyles = StyleSheet.create({
   
   // Cards and content containers
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: borderRadius.lg,
     padding: spacing.xxl,
     marginBottom: spacing.xxl,
@@ -169,6 +173,22 @@ export const commonStyles = StyleSheet.create({
   
   // Buttons
   buttonPrimary: {
+  backgroundColor: colors.primary,
+  paddingVertical: spacing.md,
+  paddingHorizontal: spacing.xl,
+  borderRadius: borderRadius.sm,
+  alignItems: 'center',
+  marginBottom: spacing.md,
+  minHeight: 48,
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 3, // Android shadow
+},
+
+  buttonSecondary: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
@@ -177,15 +197,13 @@ export const commonStyles = StyleSheet.create({
     marginBottom: spacing.md,
     minHeight: 48,
     justifyContent: 'center',
-  },
-  buttonSecondary: {
-    backgroundColor: colors.secondary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 3, // Android shadow
+},
+
   buttonTertiary: {
     backgroundColor: colors.tertiary,
     paddingVertical: spacing.md,
@@ -196,36 +214,43 @@ export const commonStyles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   buttonSuccess: {
-    backgroundColor: colors.success,
+    backgroundColor: colors.primary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
     marginBottom: spacing.md,
-  },
+    minHeight: 48,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 3, // Android shadow
+},
   buttonOutline: {
-    backgroundColor: colors.transparent,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    marginBottom: spacing.md,
-  },
+  backgroundColor: 'rgba(255,255,255,0.15)',
+  paddingVertical: spacing.md,
+  paddingHorizontal: spacing.xl,
+  borderRadius: borderRadius.sm,
+  alignItems: 'center',
+  borderWidth: 2,
+  borderColor: colors.primary,
+  marginBottom: spacing.md,
+},
   buttonDisabled: {
     backgroundColor: colors.darkGray,
   },
-  buttonText: {
-    color: colors.textLight,
-    fontWeight: 'bold',
-    fontSize: fontSizes.medium,
-  },
+ buttonText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: fontSizes.medium,
+},
   buttonTextOutline: {
-    color: colors.primary,
-    fontWeight: 'bold',
-    fontSize: fontSizes.medium,
-  },
+  color: colors.primary,
+  fontWeight: 'bold',
+  fontSize: fontSizes.medium,
+},
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
