@@ -17,6 +17,9 @@ import { colors, commonStyles } from '../../styles';
 import RelationshipStatusBar from '../../components/RelationshipStatusBar';
 import { useUserProfile } from '../../contexts/UserProfileContext';
 import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 type ChatScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Chat'>;
@@ -31,11 +34,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const [isSending, setIsSending] = useState(false);
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const headerHeight = useHeaderHeight();  
   const flatListRef = useRef<FlatList>(null);
   const chatHistory = useRef<{ role: string; content: string }[]>([]);
   const playStartTime = useRef<number>(Date.now());
-  
+  const insets = useSafeAreaInsets();
   const selectedStory = stories.find(story => story.id === storyId);
   const { currentSession, updateCurrentSession } = useSessionNavigation();
 
@@ -253,57 +256,50 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   }, [currentScene, storyId, sessionId, navigation, addImageMessage]);
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isSending || !currentSession) return;
+  if (!inputText.trim() || isSending || !currentSession) return;
 
-    await playSoundEffect(require('../../assets/audio/message_send.mp3'));
+  await playSoundEffect(require('../../assets/audio/message_send.mp3'));
 
-    const userMessage = inputText.trim();
-    addMessage(userMessage, 'user');
-    chatHistory.current.push({ role: 'user', content: userMessage });
-    setInputText('');
-    setIsSending(true);
+  const userMessage = inputText.trim();
+  addMessage(userMessage, 'user');
+  chatHistory.current.push({ role: 'user', content: userMessage });
+  setInputText('');
+  setIsSending(true);
 
-    try {
-      // Record choice if this is a significant decision point
-      await storySessionManager.recordChoice(sessionId, {
-        id: `choice_${Date.now()}`,
-        sceneId: currentScene?.id || sceneId,
-        choiceIndex: currentSession.choiceCount,
-        choiceText: userMessage,
-      });
+  try {
+    // Record choice at this message
+    await storySessionManager.recordChoice(sessionId, {
+      id: `choice_${Date.now()}`,
+      sceneId: currentScene?.id || sceneId,
+      choiceIndex: currentSession.choiceCount,
+      choiceText: userMessage,
+    });
 
-      const aiReply = await getChatbotReply(chatHistory.current);
-      chatHistory.current.push({ role: 'assistant', content: aiReply });
-      addMessage(aiReply, 'assistant');
+    const aiReply = await getChatbotReply(chatHistory.current);
+    chatHistory.current.push({ role: 'assistant', content: aiReply });
+    addMessage(aiReply, 'assistant');
 
-      await playSoundEffect(require('../../assets/audio/message_receive.mp3'));
-      
-      // Check for triggers in the AI's reply
-      await checkTriggers(aiReply);
-      
-      // Update session stats
-      await updateCurrentSession({
-        choiceCount: currentSession.choiceCount + 1,
-      });
-      
-    } catch (error) {
-      console.error('Error getting chatbot reply:', error);
-      addMessage('Sorry, something went wrong. Please try again.', 'system');
-    } finally {
-      setIsSending(false);
-    }
-  };
+    await playSoundEffect(require('../../assets/audio/message_receive.mp3'));
 
-  const handleManualSave = async () => {
-    try {
-      await updatePlayTime();
-      await saveSessionData(messages);
-      Alert.alert('Success', 'Progress saved successfully!');
-    } catch (error) {
-      console.error('Error saving progress:', error);
-      Alert.alert('Error', 'Failed to save progress. Please try again.');
-    }
-  };
+    // Check for triggers in AI's reply
+    await checkTriggers(aiReply);
+
+    // Update session stats (increment choice count)
+    await updateCurrentSession({
+      choiceCount: currentSession.choiceCount + 1,
+    });
+
+    // 🔥 Autosave progress here
+    await updatePlayTime();
+    await saveSessionData(messages);
+
+  } catch (error) {
+    console.error('Error handling message send:', error);
+    addMessage('Sorry, something went wrong. Please try again.', 'system');
+  } finally {
+    setIsSending(false);
+  }
+};
 
   const renderMessageItem = ({ item }: { item: Message }) => {
   const displayName = item.sender === 'user'
@@ -373,93 +369,61 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
     );
   }
 
-  return (
-    <>
-      <RelationshipStatusBar />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-      >
-        <SafeAreaView style={commonStyles.safeAreaContainer}>
-          
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessageItem}
-            keyExtractor={item => item.id}
-            contentContainerStyle={commonStyles.messagesContent}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-            keyboardShouldPersistTaps="handled"
-          />
+return (
+  <>
+    <RelationshipStatusBar />
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#f5f5f5' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={headerHeight}
+    >
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessageItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={commonStyles.messagesContent}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        keyboardShouldPersistTaps="always"
+      />
 
-          <View style={commonStyles.footerContainer}>
-            {isSending && (
-              <View style={commonStyles.typingContainer}>
-                <ActivityIndicator size="small" color={colors.secondary} />
-                <Text style={commonStyles.typingText}>Typing...</Text>
-              </View>
-            )}
-
-            <View style={commonStyles.inputContainer}>
-              <TextInput
-                style={commonStyles.input}
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder="Type your message..."
-                multiline
-                maxLength={500}
-                returnKeyType="send"
-                onSubmitEditing={handleSendMessage}
-                editable={!isSending}
-              />
-              <TouchableOpacity
-                style={[
-                  commonStyles.buttonPrimary,
-                  (!inputText.trim() || isSending) && commonStyles.buttonDisabled,
-                ]}
-                onPress={handleSendMessage}
-                disabled={!inputText.trim() || isSending}
-              >
-                <Text style={commonStyles.buttonText}>Send</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={commonStyles.buttonRow}>
-              <TouchableOpacity
-                style={commonStyles.buttonSecondary}
-                onPress={handleManualSave}
-                disabled={isSending}
-              >
-                <Text style={commonStyles.buttonText}>Save Progress</Text>
-              </TouchableOpacity>
-
-              {currentScene.sceneTriggers && currentScene.sceneTriggers.length > 0 && (
-                <TouchableOpacity
-                  style={commonStyles.buttonTertiary}
-                  onPress={() => {
-                    const nextSceneId = currentScene.sceneTriggers?.[0]?.nextSceneIndex;
-                    if (nextSceneId) {
-                      navigation.navigate('StoryScene', { 
-                        storyId, 
-                        sessionId,
-                        sceneId: nextSceneId 
-                      });
-                    }
-                  }}
-                  disabled={isSending}
-                >
-                  <Text style={commonStyles.buttonText}>Go to Next Scene</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+      <View style={[commonStyles.footerContainer, { paddingBottom: insets.bottom }]}>
+        {isSending && (
+          <View style={commonStyles.typingContainer}>
+            <ActivityIndicator size="small" color={colors.secondary} />
+            <Text style={commonStyles.typingText}>Typing...</Text>
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </>
-  );
+        )}
+
+        <View style={commonStyles.inputContainer}>
+          <TextInput
+            style={commonStyles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Type your message..."
+            multiline
+            maxLength={500}
+            returnKeyType="send"
+            onSubmitEditing={handleSendMessage}
+            editable={!isSending}
+          />
+          <TouchableOpacity
+            style={[
+              commonStyles.sendButton,
+              (!inputText.trim() || isSending) && commonStyles.buttonDisabled,
+            ]}
+            onPress={handleSendMessage}
+            disabled={!inputText.trim() || isSending}
+          >
+            <Text style={commonStyles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  </>
+);
 };
 
 export default ChatScreen;

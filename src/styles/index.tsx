@@ -259,20 +259,34 @@ export const commonStyles = StyleSheet.create({
   
   // Form elements
   input: {
-    flex: 1,
-    backgroundColor: colors.lightGray,
-    borderRadius: borderRadius.round,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    maxHeight: 100,
-  },
+  flex: 1,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: '#f2f2f2',
+  paddingHorizontal: 16,
+  fontSize: 16,
+  color: '#333',
+},
   inputContainer: {
-    flexDirection: 'row',
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderTopWidth: 1,
-    borderTopColor: colors.mediumGray,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  padding: 10,
+  borderTopWidth: 1,
+  borderTopColor: '#ddd',
+  backgroundColor: '#fff',
+},
+sendButton: {
+  marginLeft: 10,
+  backgroundColor: '#ff6b6b',
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 22,
+},
+sendButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
   
   // Chat styles
   messagesContent: {
