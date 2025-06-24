@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { storySessionManager } from '../data/sessionstorage';
 import { useNavigation } from '@react-navigation/native';
 import { CharacterStats, DEFAULT_CHARACTER_STATS, StorySession } from '../types';
+import { stories } from '../data/stories'; // Import your stories data
 
 interface SessionNavigationContextType {
   currentSession: StorySession | null;
@@ -303,36 +304,49 @@ export const useSessionAwareNavigation = () => {
     },
 
     // Resume an existing session
-    resumeSession: async (sessionId: string) => {
-      try {
-        const session = await sessionContext.loadSession(sessionId);
-        
-        if (!session) {
-          throw new Error('Session not found');
-        }
+    resumeSession: async (sessionId: string) => { 
+  try {
+    const session = await sessionContext.loadSession(sessionId);
+    if (!session) throw new Error('Session not found');
 
-        // Navigate based on session state
-        if (session.choices.length === 0) {
-          // Brand new session - start with prologue
-          navigation.navigate('StoryScene', {
-            storyId: session.storyId,
-            sessionId: session.id,
-            sceneId: 'prologue',
-            isPrologue: true,
-          });
-        } else {
-          // Existing session - go to current scene/chat
-          navigation.navigate('Chat', {
-            storyId: session.storyId,
-            sessionId: session.id,
-            sceneId: session.currentSceneId,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to resume session:', error);
-        throw error;
+    // Load the story for this session
+    const story = stories.find(s => s.id === session.storyId);
+    if (!story) throw new Error('Story not found');
+
+    // Find the current scene by ID
+    const scene = story.scenes.find(s => s.id === session.currentSceneId);
+    if (!scene) throw new Error('Scene not found');
+
+    if (session.choices.length === 0) {
+      // Brand new session - start with prologue
+      navigation.navigate('StoryScene', {
+        storyId: session.storyId,
+        sessionId: session.id,
+        sceneId: 'prologue',
+        isPrologue: true,
+      });
+    } else {
+      // Navigate based on scene type
+      if (scene.type === 'chat') {
+        navigation.navigate('Chat', {
+          storyId: session.storyId,
+          sessionId: session.id,
+          sceneId: scene.id,
+        });
+      } else {
+        navigation.navigate('StoryScene', {
+          storyId: session.storyId,
+          sessionId: session.id,
+          sceneId: scene.id,
+        });
       }
-    },
+    }
+  } catch (error) {
+    console.error('Failed to resume session:', error);
+    throw error;
+  }
+},
+
 
     // Navigate to session management
     manageSession: (sessionId: string, storyId: string) => {

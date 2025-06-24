@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Image, Alert
+  KeyboardAvoidingView, Platform, ActivityIndicator, Image, Alert, Keyboard
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,7 +41,29 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const selectedStory = stories.find(story => story.id === storyId);
   const { currentSession, updateCurrentSession } = useSessionNavigation();
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+  useEffect(() => {
+  const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+    setIsKeyboardVisible(true);
+  });
+  const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+    setIsKeyboardVisible(false);
+  });
+
+  return () => {
+    keyboardDidHideListener?.remove();
+    keyboardDidShowListener?.remove();
+  };
+}, []);
+
+  useEffect(() => {
+    if (currentSession && sceneId) {
+      updateCurrentSession({ currentSceneId: sceneId }).catch(err => {
+        console.error('Failed to update currentSceneId:', err);
+      });
+    }
+  }, [sceneId, currentSession]);
   // Initialize chat session
   useEffect(() => {
     initializeChatSession();
@@ -66,6 +88,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
       // Find the current scene
       const scene = selectedStory.scenes.find(s => s.id === sceneId);
+      console.log('Looking for scene with id:', sceneId);
+      console.log('Available scenes:', selectedStory.scenes.map(s => s.id));
       if (!scene) {
         throw new Error('Scene not found');
       }
@@ -98,25 +122,34 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         
         // Rebuild chat history from saved messages
         const rebuiltHistory = transformedMessages
-          .filter(msg => msg.sender !== 'system')
-          .map(msg => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: msg.text || '',
-          }));
-          
-        chatHistory.current = [
-          { role: 'system', content: systemPrompt },
-          ...rebuiltHistory,
-        ];
+  .filter(msg => msg.sender !== 'system' && msg.text)  // only text messages
+  .map(msg => ({
+    role: msg.sender === 'user' ? 'user' : 'assistant',
+    content: msg.text,
+  }));
+
+chatHistory.current = [
+  { role: 'system', content: systemPrompt },
+  ...rebuiltHistory,
+];
+
       }
 
       // Update session with current scene if different
-      if (session.currentSceneId !== sceneId) {
-        await updateCurrentSession({
-          currentSceneId: sceneId,
-          scenesVisited: [...new Set([...session.scenesVisited, sceneId])],
-        });
-      }
+if (session.currentSceneId !== sceneId) {
+  await updateCurrentSession({
+    messages: session.messages.map((msg: any) => ({
+      id: msg.id,
+      text: msg.text,
+      image: msg.image,
+      sender: msg.type ?? 'assistant',
+      timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      name: msg.name,
+      avatar: msg.avatar,
+    })),
+    lastPlayedAt: new Date().toISOString(),
+  });
+}
 
     } catch (error) {
       console.error('Error initializing chat session:', error);
@@ -389,7 +422,10 @@ return (
         keyboardShouldPersistTaps="always"
       />
 
-      <View style={[commonStyles.footerContainer, { paddingBottom: insets.bottom }]}>
+      <View style={[
+  commonStyles.footerContainer, 
+  { paddingBottom: isKeyboardVisible ? 8 : insets.bottom }
+]}>
         {isSending && (
           <View style={commonStyles.typingContainer}>
             <ActivityIndicator size="small" color={colors.secondary} />

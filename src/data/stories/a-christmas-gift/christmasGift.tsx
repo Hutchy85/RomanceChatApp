@@ -26,6 +26,7 @@ export const christmasGift: Story = {
         { keyword: 'meet you at home', nextSceneIndex: 'partyArrival' },
         { keyword: 'see you at home', nextSceneIndex: 'partyArrival' },
         { keyword: 'heading home now', nextSceneIndex: 'partyArrival' },
+        { keyword: 'at home', nextSceneIndex: 'partyArrival' },
       ],
       backgroundImageKey: 'default',
     },

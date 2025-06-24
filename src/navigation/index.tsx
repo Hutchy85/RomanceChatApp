@@ -165,7 +165,7 @@ const Navigation = () => {
   component={ChatScreen}
   options={({ route }) => ({
     title: 'Chat',
-    headerBackTitle: 'Story',
+    headerBackTitle: 'Stories',
     headerLeft: () => null,
     headerBackground: () => (
       <LinearGradient

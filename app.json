@@ -16,21 +16,27 @@
       "supportsTablet": true
     },
     "android": {
-  "adaptiveIcon": {
-    "foregroundImage": "./assets/adaptive-icon.png",
-    "backgroundColor": "#ffffff"
-  },
-  "statusBar": {
-    "translucent": false,
-    "backgroundColor": "#ffffff",
-    "barStyle": "dark-content"
-  }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "statusBar": {
+        "translucent": false,
+        "backgroundColor": "#ffffff",
+        "barStyle": "dark-content"
+      },
+      "package": "swai.test.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "updates": {
       "enabled": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0a67c330-834e-4c9c-827d-b6b7c025745c"
+      }
     }
   }
 }
