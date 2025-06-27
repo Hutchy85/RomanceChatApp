@@ -3,18 +3,17 @@ import { View, Text, StyleSheet } from 'react-native';
 import * as Progress from 'react-native-progress';
 import { useSessionNavigation } from '../contexts/SessionNavigationContext';
 
+const statsToDisplay = [
+  { key: 'affection' as const, label: '❤️ Affection', color: '#ff6384' },
+  { key: 'trust' as const, label: '🤝 Trust', color: '#4bc0c0' },
+  { key: 'respect' as const, label: '🫡 Respect', color: '#facc15' },
+  { key: 'friendship' as const, label: '👥 Friendship', color: '#c084fc' },
+];
 
 const RelationshipStatusBar = () => {
   const { currentSession } = useSessionNavigation();
 
   if (!currentSession?.characterStats) return null;
-
-  const statsToDisplay = [
-    { key: 'affection', label: '❤️ Affection', color: '#ff6384' },
-    { key: 'trust', label: '🤝 Trust', color: '#4bc0c0' },
-    { key: 'respect', label: '🫡 Respect', color: '#facc15' },
-    { key: 'friendship', label: '👥 Friendship', color: '#c084fc' },
-  ];
 
   return (
     <View style={styles.container}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   Dimensions,
   Alert,
+  FlatList,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -120,8 +121,6 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
 
   // Use the session-aware navigation hook instead
   const sessionNavigation = useSessionAwareNavigation();
-
-  const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
     loadDashboardData();
@@ -366,75 +365,77 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
     </View>
   );
 
-  const renderStoryCard = (progress: StoryProgress) => {
-    const story = getStoryById(progress.storyId);
-    if (!story) return null;
-
-    const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../assets/images/defaultImage.png');
-    const hasAnySessions = progress.sessions.length > 0;
-    const canContinue = progress.mostRecentSession && sessionNavigation.canResumeSession(progress.mostRecentSession);
-
+  const renderStoryCard = useCallback(({ item: progress }: { item: StoryProgress }) => {
     return (
-      <View key={progress.storyId} style={commonStyles.storyCard}>
-        <View style={[commonStyles.flexRow, { marginBottom: spacing.lg, marginLeft: spacing.sm, marginTop: spacing.sm }]}>
-          <Image 
-            source={imageSource} 
-            style={dashboardStyles.storyThumbnail} 
-            resizeMode="cover" 
-          />
-          <View style={dashboardStyles.storyHeaderInfo}>
-            <Text style={commonStyles.storyTitle}>{story.title}</Text>
-            <Text style={dashboardStyles.storyMeta}>
-              {progress.sessions.length} session{progress.sessions.length !== 1 ? 's' : ''} • {progress.totalMessagesCount} messages
-            </Text>
-            <Text style={dashboardStyles.storyMeta}>
-              {formatPlayTime(progress.totalPlayTime)} played • {formatLastPlayed(progress.lastPlayedDate)}
-            </Text>
-            {renderProgressBar(progress.completionPercentage)}
+      <StoryCard
+        progress={progress}
+        onContinueStory={handleContinueStory}
+        onManageSessions={handleManageSessions}
+        onStartNewStory={handleStartNewStory}
+        getStoryById={getStoryById}
+        renderProgressBar={renderProgressBar}
+        renderBadge={renderBadge}
+      />
+    );
+  }, [handleContinueStory, handleManageSessions, handleStartNewStory, getStoryById, renderProgressBar, renderBadge]);
+
+  const StoryCard = React.memo(({ progress, onContinueStory, onManageSessions, onStartNewStory, getStoryById, renderProgressBar, renderBadge }: any) => {
+      const story = getStoryById(progress.storyId);
+      if (!story) return null;
+  
+      const imageSource = imageMap[story.image as keyof typeof imageMap] || require('../../assets/images/defaultImage.png');
+      const hasAnySessions = progress.sessions.length > 0;
+      const canContinue = progress.mostRecentSession && sessionNavigation.canResumeSession(progress.mostRecentSession);
+  
+      return (
+        <View style={commonStyles.storyCard}>
+          <View style={[commonStyles.flexRow, { marginBottom: spacing.lg, marginLeft: spacing.sm, marginTop: spacing.sm }]}>
+            <Image 
+              source={imageSource} 
+              style={dashboardStyles.storyThumbnail} 
+              resizeMode="cover" 
+            />
+            <View style={dashboardStyles.storyHeaderInfo}>
+              <Text style={commonStyles.storyTitle}>{story.title}</Text>
+              <Text style={dashboardStyles.storyMeta}>
+                {progress.sessions.length} session{progress.sessions.length !== 1 ? 's' : ''} • {progress.totalMessagesCount} messages
+              </Text>
+              <Text style={dashboardStyles.storyMeta}>
+                {formatPlayTime(progress.totalPlayTime)} played • {formatLastPlayed(progress.lastPlayedDate)}
+              </Text>
+              {renderProgressBar(progress.completionPercentage)}
+            </View>
+          </View>
+  
+          <View style={dashboardStyles.badgeSection}>
+            <Text style={dashboardStyles.badgeSectionTitle}>Story Badges</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dashboardStyles.badgesList}>
+              {progress.badges.map((badge: Badge) => renderBadge(badge))}
+            </ScrollView>
+          </View>
+  
+          <View style={[commonStyles.flexRow, commonStyles.spaceBetween]}>
+            {canContinue ? (
+              <TouchableOpacity style={[commonStyles.buttonSuccess, dashboardStyles.actionButton]} onPress={() => onContinueStory(progress)}>
+                <Text style={commonStyles.buttonText}>Continue Story</Text>
+              </TouchableOpacity>
+            ) : hasAnySessions ? (
+              <TouchableOpacity style={[commonStyles.buttonPrimary, dashboardStyles.actionButton]} onPress={() => onManageSessions(progress)}>
+                <Text style={commonStyles.buttonText}>Manage Sessions</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={[commonStyles.buttonPrimary, dashboardStyles.actionButton]} onPress={() => onStartNewStory(progress.storyId)}>
+                <Text style={commonStyles.buttonText}>Start Story</Text>
+              </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity style={[commonStyles.buttonOutline, dashboardStyles.actionButton]} onPress={() => onStartNewStory(progress.storyId)}>
+              <Text style={commonStyles.buttonTextOutline}>New Session</Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        <View style={dashboardStyles.badgeSection}>
-          <Text style={dashboardStyles.badgeSectionTitle}>Story Badges</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dashboardStyles.badgesList}>
-            {progress.badges.map((badge) => renderBadge(badge))}
-          </ScrollView>
-        </View>
-
-        <View style={[commonStyles.flexRow, commonStyles.spaceBetween]}>
-          {canContinue ? (
-            <TouchableOpacity
-              style={[commonStyles.buttonSuccess, dashboardStyles.actionButton]}
-              onPress={() => handleContinueStory(progress)}
-            >
-              <Text style={commonStyles.buttonText}>Continue Story</Text>
-            </TouchableOpacity>
-          ) : hasAnySessions ? (
-            <TouchableOpacity
-              style={[commonStyles.buttonPrimary, dashboardStyles.actionButton]}
-              onPress={() => handleManageSessions(progress)}
-            >
-              <Text style={commonStyles.buttonText}>Manage Sessions</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[commonStyles.buttonPrimary, dashboardStyles.actionButton]}
-              onPress={() => handleStartNewStory(progress.storyId)}
-            >
-              <Text style={commonStyles.buttonText}>Start Story</Text>
-            </TouchableOpacity>
-          )}
-          
-          <TouchableOpacity
-            style={[commonStyles.buttonOutline, dashboardStyles.actionButton]}
-            onPress={() => handleStartNewStory(progress.storyId)}
-          >
-            <Text style={commonStyles.buttonTextOutline}>New Session</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+      );
+  });
 
   const overallProgress = storyProgresses.length > 0 
     ? storyProgresses.reduce((sum, p) => sum + p.completionPercentage, 0) / storyProgresses.length 
@@ -520,7 +521,12 @@ const StoryDashboardScreen: React.FC<StoryDashboardScreenProps> = ({ navigation 
 
         {/* Stories Section */}
         <Text style={commonStyles.sectionTitle}>Your Stories</Text>
-        {storyProgresses.map(renderStoryCard)}
+        <FlatList
+          data={storyProgresses}
+          renderItem={renderStoryCard}
+          keyExtractor={(item) => item.storyId}
+          initialNumToRender={3}
+        />
 
         {/* Navigation Actions */}
         <View style={dashboardStyles.navigationActions}>

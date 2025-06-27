@@ -113,7 +113,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
           id: msg.id,
           text: msg.text,
           image: msg.image,
-          sender: msg.type ?? 'assistant', // fallback if missing
+          sender: msg.sender ?? 'assistant', // fallback if missing
           timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           name: msg.name,
           avatar: msg.avatar,
@@ -142,7 +142,7 @@ if (session.currentSceneId !== sceneId) {
       id: msg.id,
       text: msg.text,
       image: msg.image,
-      sender: msg.type ?? 'assistant',
+      sender: msg.sender ?? 'assistant',
       timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       name: msg.name,
       avatar: msg.avatar,
@@ -186,11 +186,7 @@ if (session.currentSceneId !== sceneId) {
       if (!currentSession) return;
 
       await updateCurrentSession({
-        messages: updatedMessages.map(msg => ({
-          ...msg,
-          sender: msg.name ?? '',
-          content: msg.text ?? '',
-        })),
+        messages: updatedMessages,
         lastPlayedAt: new Date().toISOString(),
       });
     } catch (error) {
@@ -308,7 +304,7 @@ if (session.currentSceneId !== sceneId) {
       choiceText: userMessage,
     });
 
-    const aiReply = await getChatbotReply(chatHistory.current);
+    const aiReply = await getChatbotReply(chatHistory.current, currentSession.characterStats);
     chatHistory.current.push({ role: 'assistant', content: aiReply });
     addMessage(aiReply, 'assistant');
 
@@ -321,10 +317,6 @@ if (session.currentSceneId !== sceneId) {
     await updateCurrentSession({
       choiceCount: currentSession.choiceCount + 1,
     });
-
-    // 🔥 Autosave progress here
-    await updatePlayTime();
-    await saveSessionData(messages);
 
   } catch (error) {
     console.error('Error handling message send:', error);

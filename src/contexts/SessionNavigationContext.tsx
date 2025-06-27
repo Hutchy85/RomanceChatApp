@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { storySessionManager } from '../data/sessionstorage';
 import { useNavigation } from '@react-navigation/native';
 import { CharacterStats, DEFAULT_CHARACTER_STATS, StorySession } from '../types';
@@ -57,7 +57,7 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
   }, []);
 
   // Create a new session
-  const createNewSession = async (storyId: string, characterName?: string): Promise<string> => {
+  const createNewSession = useCallback(async (storyId: string, characterName?: string): Promise<string> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -81,10 +81,10 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Load an existing session
-  const loadSession = async (sessionId: string): Promise<StorySession | null> => {
+  const loadSession = useCallback(async (sessionId: string): Promise<StorySession | null> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -111,10 +111,10 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Update the current session
-  const updateCurrentSession = async (updates: Partial<StorySession>): Promise<void> => {
+  const updateCurrentSession = useCallback(async (updates: Partial<StorySession>): Promise<void> => {
     if (!currentSession) {
       throw new Error('No current session to update');
     }
@@ -133,10 +133,10 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
       console.error('Update session error:', err);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession]);
 
   // Initialize character stats with default values
-  const initializeCharacterStats = async (initialStats: Partial<CharacterStats> = {}) => {
+  const initializeCharacterStats = useCallback(async (initialStats: Partial<CharacterStats> = {}) => {
     if (!currentSession) {
       throw new Error('No current session to initialize stats for');
     }
@@ -156,10 +156,10 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
       console.error('Initialize character stats error:', error);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession, updateCurrentSession]);
 
   // Update character stats
-  const updateCharacterStats = async (updates: Partial<CharacterStats>) => {
+  const updateCharacterStats = useCallback(async (updates: Partial<CharacterStats>) => {
     if (!currentSession) {
       throw new Error('No current session to update stats for');
     }
@@ -188,10 +188,10 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
       console.error('Update character stats error:', error);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession, updateCurrentSession]);
 
   // Delete a session
-  const deleteSession = async (sessionId: string): Promise<void> => {
+  const deleteSession = useCallback(async (sessionId: string): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -210,20 +210,20 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentSession?.id]);
 
   // Get sessions for a specific story
-  const getSessionsForStory = (storyId: string): StorySession[] => {
+  const getSessionsForStory = useCallback((storyId: string): StorySession[] => {
     return storySessionManager.getSessionsForStory(storyId);
-  };
+  }, []);
 
   // Check if a session can be resumed
-  const canResumeSession = (session: StorySession): boolean => {
+  const canResumeSession = useCallback((session: StorySession): boolean => {
     return session.choices.length > 0 && !session.isCompleted;
-  };
+  }, []);
 
   // Calculate session progress (0-100)
-  const getSessionProgress = (session: StorySession): number => {
+  const getSessionProgress = useCallback((session: StorySession): number => {
     if (session.isCompleted) return 100;
     
     // This is a simple progress calculation - you might want to make it more sophisticated
@@ -232,23 +232,23 @@ export const SessionNavigationProvider: React.FC<SessionNavigationProviderProps>
     const visitedScenes = session.scenesVisited.length;
     
     return Math.min(Math.round((visitedScenes / totalScenes) * 100), 95); // Cap at 95% until completed
-  };
+  }, []);
 
-  const contextValue: SessionNavigationContextType = {
-    currentSession,
-    setCurrentSession,
-    createNewSession,
-    loadSession,
-    updateCurrentSession,
-    deleteSession,
-    updateCharacterStats,
-    initializeCharacterStats,
-    isLoading,
-    error,
-    getSessionsForStory,
-    canResumeSession,
-    getSessionProgress,
-  };
+  const contextValue: SessionNavigationContextType = useMemo(() => ({
+      currentSession,
+      setCurrentSession,
+      createNewSession,
+      loadSession,
+      updateCurrentSession,
+      deleteSession,
+      updateCharacterStats,
+      initializeCharacterStats,
+      isLoading,
+      error,
+      getSessionsForStory,
+      canResumeSession,
+      getSessionProgress,
+  }), [currentSession, isLoading, error, createNewSession, loadSession, updateCurrentSession, deleteSession, updateCharacterStats, initializeCharacterStats, getSessionsForStory, canResumeSession, getSessionProgress]);
 
   return (
     <SessionNavigationContext.Provider value={contextValue}>
