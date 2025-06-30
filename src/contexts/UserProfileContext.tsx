@@ -1,5 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { useContext } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile } from '../types';
 
@@ -28,20 +27,22 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     loadProfile();
   }, []);
 
-  const updateProfile = async (newProfile: UserProfile) => {
+  const updateProfile = useCallback(async (newProfile: UserProfile) => {
     setProfile(newProfile);
     await AsyncStorage.setItem('userProfile', JSON.stringify(newProfile));
-  };
+   }, []);
 
-  const clearProfile = async () => {
+  const clearProfile = useCallback(async () => {
     setProfile(null);
     await AsyncStorage.removeItem('userProfile');
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    profile, isProfileLoaded, updateProfile, clearProfile
+  }), [profile, isProfileLoaded, updateProfile, clearProfile]);
 
   return (
-    <UserProfileContext.Provider
-      value={{ profile, isProfileLoaded, updateProfile, clearProfile }}
-    >
+    <UserProfileContext.Provider value={contextValue}>
       {children}
     </UserProfileContext.Provider>
   );

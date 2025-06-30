@@ -33,7 +33,7 @@ export const getChatbotReply = async (
     const response = await fetch(`${BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': API_KEY ?? '',
+        'Authorization': `Bearer ${API_KEY ?? ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
