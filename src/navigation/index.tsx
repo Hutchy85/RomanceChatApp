@@ -13,6 +13,7 @@ import UserProfileScreen from '../screens/UserProfileScreen';
 import HeaderMenu from '../components/HeadderMenu'; // Import the header menu component
 import ProfileGate from '../screens/ProfileGateScreen'; // Import the profile gate screen
 import EditProfileScreen from '../screens/EditProfileScreen'; // Import the edit profile screen
+import MessageHub from '../screens/MessageHub'; // Import the message hub screen
 
 // Define the navigation parameters
 export type RootStackParamList = {
@@ -30,6 +31,12 @@ export type RootStackParamList = {
     storyTitle?: string;
   };
   
+  MessageHub: { 
+    storyId: string; 
+    sessionId: string; 
+    sceneId?: string;
+  };
+
   // Story screens with session context
   StoryScene: { 
     storyId: string; 
@@ -159,6 +166,15 @@ const Navigation = () => {
   })}
 />
 
+      <Stack.Screen
+        name="MessageHub"
+        component={MessageHub}
+        options={{
+          title: 'Message Hub',
+          headerBackTitle: 'Sessions',
+        }}
+      />
+      
         {/* Chat screen with session management */}
         <Stack.Screen
   name="Chat"
