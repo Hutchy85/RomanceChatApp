@@ -15,6 +15,7 @@ export const christmasGift: Story = {
       id: 'chat',
       type: 'chat',
       characterName: 'Holly',
+      initialMessage: "Hey, how was your day? Anything exciting happen?",
       systemPrompt: characterPrompts.Holly1,
       imageTriggers: [
         {
