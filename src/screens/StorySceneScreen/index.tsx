@@ -93,25 +93,24 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   try {
     setIsLoading(true);
 
-    // Record the choice in the session (still keeping consequences in case you want it for logs)
+    // Record the choice in the session
     await storySessionManager.recordChoice(currentSession.id, {
       id: `${sceneId}_${choiceIndex}_${Date.now()}`,
       sceneId: sceneId || 'prologue',
       choiceIndex,
       choiceText: choice.text,
-      effects: choice.effects || {},  // record effects here now
+      effects: choice.effects || {},
     });
 
-    // 👉 Apply character stat effects if any
+    // Apply character stat effects if any
     if (choice.effects) {
       const updates: Partial<CharacterStats> = {};
 
-      // Loop over each key in effects object
       Object.entries(choice.effects).forEach(([type, delta]) => {
         if (currentSession.characterStats && type in currentSession.characterStats) {
           const currentValue = currentSession.characterStats[type as keyof CharacterStats] || 0;
           let newValue = Number(currentValue) + (delta as number);
-          newValue = Math.max(0, Math.min(100, newValue)); // clamp 0-100
+          newValue = Math.max(0, Math.min(100, newValue));
           updates[type as keyof CharacterStats] = newValue;
         }
       });
@@ -125,9 +124,9 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
       const nextScene = story?.scenes.find(s => s.id === choice.nextSceneIndex);
       if (nextScene) {
         if (nextScene.type === 'chat') {
-          navigation.navigate('Chat', {
+          // Navigate to MessageHub instead of directly to Chat
+          navigation.navigate('MessageHub', {
             storyId,
-            sceneId: nextScene.id,
             sessionId: currentSession.id,
           });
         } else {
@@ -149,94 +148,82 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle continue button (for scenes without explicit choices)
   const handleContinue = async () => {
-    if (!currentSession) {
-      Alert.alert('Error', 'No active session found');
-      return;
-    }
+  if (!currentSession) {
+    Alert.alert('Error', 'No active session found');
+    return;
+  }
 
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      const scene = story?.scenes.find(s => s.id === sceneId);
-      if (scene?.nextSceneIndex !== undefined) {
-        // Record automatic continuation as a choice
-        await storySessionManager.recordChoice(currentSession.id, {
-          id: `${sceneId}_continue_${Date.now()}`,
-          sceneId: sceneId || 'prologue',
-          choiceIndex: 0,
-          choiceText: 'Continue',
-          consequences: [],
-        });
-
-        const nextScene = story?.scenes.find(s => s.id === scene.nextSceneIndex);
-        if (nextScene) {
-          if (nextScene.type === 'chat') {
-            navigation.navigate('Chat', { 
-              storyId, 
-              sceneId: nextScene.id, 
-              sessionId: currentSession.id 
-            });
-          } else {
-            navigation.navigate('StoryScene', { 
-              storyId, 
-              sceneId: nextScene.id, 
-              sessionId: currentSession.id 
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to continue:', error);
-      Alert.alert('Error', 'Failed to continue story');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle beginning story from prologue
-  const handleBeginStory = async () => {
-    if (!currentSession) {
-      Alert.alert('Error', 'No active session found');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Record prologue completion
+    const scene = story?.scenes.find(s => s.id === sceneId);
+    if (scene?.nextSceneIndex !== undefined) {
+      // Record automatic continuation as a choice
       await storySessionManager.recordChoice(currentSession.id, {
-        id: `prologue_begin_${Date.now()}`,
-        sceneId: 'prologue',
+        id: `${sceneId}_continue_${Date.now()}`,
+        sceneId: sceneId || 'prologue',
         choiceIndex: 0,
-        choiceText: 'Begin Story',
-        consequences: ['story_started'],
+        choiceText: 'Continue',
+        consequences: [],
       });
 
-      // Navigate to first scene
-      const firstSceneId = story?.scenes[0].id;
-      if (firstSceneId) {
-        const firstScene = story.scenes[0];
-        if (firstScene.type === 'chat') {
-          navigation.navigate('Chat', { 
+      const nextScene = story?.scenes.find(s => s.id === scene.nextSceneIndex);
+      if (nextScene) {
+        if (nextScene.type === 'chat') {
+          // Navigate to MessageHub instead of directly to Chat
+          navigation.navigate('MessageHub', { 
             storyId, 
-            sceneId: firstSceneId, 
             sessionId: currentSession.id 
           });
         } else {
           navigation.navigate('StoryScene', { 
             storyId, 
-            sceneId: firstSceneId, 
+            sceneId: nextScene.id, 
             sessionId: currentSession.id 
           });
         }
       }
-    } catch (error) {
-      console.error('Failed to begin story:', error);
-      Alert.alert('Error', 'Failed to start story');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Failed to continue:', error);
+    Alert.alert('Error', 'Failed to continue story');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  // Handle beginning story from prologue
+  const handleBeginStory = async () => {
+  if (!currentSession) {
+    Alert.alert('Error', 'No active session found');
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    // Record prologue completion
+    await storySessionManager.recordChoice(currentSession.id, {
+      id: `prologue_begin_${Date.now()}`,
+      sceneId: 'prologue',
+      choiceIndex: 0,
+      choiceText: 'Begin Story',
+      consequences: ['story_started'],
+    });
+
+    // Navigate to MessageHub instead of first scene
+    navigation.navigate('MessageHub', { 
+      storyId, 
+      sessionId: currentSession.id 
+    });
+
+  } catch (error) {
+    console.error('Failed to begin story:', error);
+    Alert.alert('Error', 'Failed to start story');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   if (!story) {
     return (

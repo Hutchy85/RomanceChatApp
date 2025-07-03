@@ -8,13 +8,16 @@ export type Message = {
   timestamp: string;
   name?: string; // optional override if you want to name in message-specific way
   avatar?: number; // image reference id or URI for avatar
+  sceneId?: string; // Add this to track which scene the message belongs to
+  isRead?: boolean;
 };
 
 export interface Scene {
   id: string;
   type: 'story' | 'chat';
   text?: string; // for story scenes
-  characterName?: string; // for chat scenes
+  characterName?: string; // for chat scenes) {
+  initialMessage?: string; // for chat scenes, initial message to start the conversation
   systemPrompt?: string; // for chat scenes
   imageTriggers?: ImageTrigger[]; // for chat scenes
   sceneTriggers?: SceneTrigger[]; // for chat scenes
@@ -142,6 +145,7 @@ export interface StorySession {
   cloudSyncStatus?: CloudSyncStatus;
   lastSyncedAt?: string;
   cloudVersion?: number;
+  readMessages?: string[];
 }
 
 export interface SaveMetadata {

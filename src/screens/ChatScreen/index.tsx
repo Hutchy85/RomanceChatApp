@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { getChatbotReply } from '../../api/apiClient';
 import { Message, Scene, UserProfile } from '../../types/index';
@@ -42,6 +42,34 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
   const selectedStory = stories.find(story => story.id === storyId);
   const { currentSession, updateCurrentSession } = useSessionNavigation();
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const markMessagesAsRead = async () => {
+        if (!currentSession) return;
+
+        try {
+          const allMessages = currentSession.messages || [];
+          const sceneMessages = allMessages.filter(msg => msg.sceneId === sceneId && msg.sender === 'assistant');
+          const currentReadMessages = currentSession.readMessages || [];
+
+          // Find unread messages from this scene
+          const unreadMessages = sceneMessages.filter(msg => !currentReadMessages.includes(msg.id));
+
+          if (unreadMessages.length > 0) {
+            const newReadMessages = [...currentReadMessages, ...unreadMessages.map(msg => msg.id)];
+            await updateCurrentSession({
+              readMessages: newReadMessages,
+            });
+          }
+        } catch (error) {
+          console.error('Error marking messages as read:', error);
+        }
+      };
+
+      markMessagesAsRead();
+    }, [sceneId, currentSession, updateCurrentSession])
+  );
 
   useEffect(() => {
   const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -108,6 +136,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 
       // Load existing messages if any
       if (session.messages && session.messages.length > 0) {
+        // Filter messages for current scene
+        const sceneMessages = session.messages.filter(msg => msg.sceneId === sceneId);
         // Ensure messages have all required fields for Message type
         const transformedMessages = session.messages.map((msg: any) => ({
           id: msg.id,
@@ -117,6 +147,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
           timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           name: msg.name,
           avatar: msg.avatar,
+          sceneId: msg.sceneId || sceneId,
+          isRead: msg.isRead,
         }));
         setMessages(transformedMessages);
         
@@ -137,19 +169,11 @@ chatHistory.current = [
 
       // Update session with current scene if different
 if (session.currentSceneId !== sceneId) {
-  await updateCurrentSession({
-    messages: session.messages.map((msg: any) => ({
-      id: msg.id,
-      text: msg.text,
-      image: msg.image,
-      sender: msg.sender ?? 'assistant',
-      timestamp: msg.timestamp ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      name: msg.name,
-      avatar: msg.avatar,
-    })),
-    lastPlayedAt: new Date().toISOString(),
-  });
-}
+        await updateCurrentSession({
+          currentSceneId: sceneId,
+          lastPlayedAt: new Date().toISOString(),
+        });
+      }
 
     } catch (error) {
       console.error('Error initializing chat session:', error);
@@ -185,13 +209,19 @@ if (session.currentSceneId !== sceneId) {
     try {
       if (!currentSession) return;
 
+      // Get all messages from session
+      const allMessages = currentSession.messages || [];
+      // Remove messages from current scene
+      const otherSceneMessages = allMessages.filter(msg => msg.sceneId !== sceneId);
+      // Add updated messages for current scene
+      const newAllMessages = [...otherSceneMessages, ...updatedMessages];
+
       await updateCurrentSession({
-        messages: updatedMessages,
+        messages: newAllMessages,
         lastPlayedAt: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Error saving session:', error);
-      // Don't show error to user for auto-saves, but log it
     }
   };
 
@@ -205,8 +235,10 @@ if (session.currentSceneId !== sceneId) {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       name: type === 'user' ? 'You' : currentScene?.characterName,
       avatar: type === 'user' ? imageMap.userAvatar : imageMap.assistantAvatar,
+      sceneId: sceneId, // Add scene ID to message
+      isRead: type === 'user' ? true : false, // User messages are always read, assistant messages start as unread
     };
-  }, [currentScene]);
+  }, [currentScene, sceneId]);
 
   const addMessage = useCallback((text: string, type: Message['sender']) => {
     const newMessage = createMessage(text, type);
@@ -285,46 +317,46 @@ if (session.currentSceneId !== sceneId) {
   }, [currentScene, storyId, sessionId, navigation, addImageMessage]);
 
   const handleSendMessage = async () => {
-  if (!inputText.trim() || isSending || !currentSession) return;
+    if (!inputText.trim() || isSending || !currentSession) return;
 
-  await playSoundEffect(require('../../assets/audio/message_send.mp3'));
+    await playSoundEffect(require('../../assets/audio/message_send.mp3'));
 
-  const userMessage = inputText.trim();
-  addMessage(userMessage, 'user');
-  chatHistory.current.push({ role: 'user', content: userMessage });
-  setInputText('');
-  setIsSending(true);
+    const userMessage = inputText.trim();
+    addMessage(userMessage, 'user');
+    chatHistory.current.push({ role: 'user', content: userMessage });
+    setInputText('');
+    setIsSending(true);
 
-  try {
-    // Record choice at this message
-    await storySessionManager.recordChoice(sessionId, {
-      id: `choice_${Date.now()}`,
-      sceneId: currentScene?.id || sceneId,
-      choiceIndex: currentSession.choiceCount,
-      choiceText: userMessage,
-    });
+    try {
+      // Record choice at this message
+      await storySessionManager.recordChoice(sessionId, {
+        id: `choice_${Date.now()}`,
+        sceneId: currentScene?.id || sceneId,
+        choiceIndex: currentSession.choiceCount,
+        choiceText: userMessage,
+      });
 
-    const aiReply = await getChatbotReply(chatHistory.current, currentSession.characterStats);
-    chatHistory.current.push({ role: 'assistant', content: aiReply });
-    addMessage(aiReply, 'assistant');
+      const aiReply = await getChatbotReply(chatHistory.current, currentSession.characterStats);
+      chatHistory.current.push({ role: 'assistant', content: aiReply });
+      addMessage(aiReply, 'assistant');
 
-    await playSoundEffect(require('../../assets/audio/message_receive.mp3'));
+      await playSoundEffect(require('../../assets/audio/message_receive.mp3'));
 
-    // Check for triggers in AI's reply
-    await checkTriggers(aiReply);
+      // Check for triggers in AI's reply
+      await checkTriggers(aiReply);
 
-    // Update session stats (increment choice count)
-    await updateCurrentSession({
-      choiceCount: currentSession.choiceCount + 1,
-    });
+      // Update session stats (increment choice count)
+      await updateCurrentSession({
+        choiceCount: currentSession.choiceCount + 1,
+      });
 
-  } catch (error) {
-    console.error('Error handling message send:', error);
-    addMessage('Sorry, something went wrong. Please try again.', 'system');
-  } finally {
-    setIsSending(false);
-  }
-};
+    } catch (error) {
+      console.error('Error handling message send:', error);
+      addMessage('Sorry, something went wrong. Please try again.', 'system');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const renderMessageItem = ({ item }: { item: Message }) => {
   const displayName = item.sender === 'user'

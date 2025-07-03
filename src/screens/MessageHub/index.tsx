@@ -25,13 +25,15 @@ interface Conversation {
   characterAvatar: number;
   lastMessage: Message | null;
   messageCount: number;
+  unreadCount: number;
   lastActivity: string;
+  hasUnread: boolean;
 }
 
 const MessageHubScreen: React.FC<MessageHubScreenProps> = ({ navigation, route }) => {
   const { storyId, sessionId } = route.params;
   const { profile } = useUserProfile();
-  const { currentSession } = useSessionNavigation();
+  const { currentSession, updateCurrentSession } = useSessionNavigation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<StorySession | null>(null);
@@ -40,7 +42,7 @@ const MessageHubScreen: React.FC<MessageHubScreenProps> = ({ navigation, route }
 
   useEffect(() => {
     loadConversations();
-  }, [storyId, sessionId]);
+  }, [storyId, sessionId, currentSession]);
 
   const loadConversations = async () => {
     try {
@@ -51,51 +53,96 @@ const MessageHubScreen: React.FC<MessageHubScreenProps> = ({ navigation, route }
       }
 
       // Load session data
-      const sessionData = storySessionManager.getSession(sessionId);
+      let sessionData = storySessionManager.getSession(sessionId);
       if (!sessionData) {
         throw new Error('Session not found');
+      }
+
+      // Check for chat scenes that need an initial message
+      const initialMessagesToAdd: Message[] = [];
+      const sessionMessages = sessionData.messages || [];
+
+      selectedStory.scenes.forEach(scene => {
+        // Check if the scene is a chat scene and has an initialMessage property
+        if (scene.type === 'chat' && 'initialMessage' in scene && scene.initialMessage) {
+          const hasMessagesForScene = sessionMessages.some(msg => msg.sceneId === scene.id);
+          if (!hasMessagesForScene) {
+            const initialMessage: Message = {
+              id: `initial-${scene.id}-${Date.now()}`,
+              text: scene.initialMessage,
+              sender: 'assistant',
+              timestamp: new Date().toISOString(),
+              name: scene.characterName,
+              avatar: imageMap.assistantAvatar,
+              sceneId: scene.id,
+              isRead: false,
+            };
+            initialMessagesToAdd.push(initialMessage);
+          }
+        }
+      });
+
+      if (initialMessagesToAdd.length > 0) {
+        const updatedMessages = [...sessionMessages, ...initialMessagesToAdd];
+        await updateCurrentSession({ messages: updatedMessages });
+        return; // Re-run will be triggered by useEffect
       }
 
       setSession(sessionData);
 
       // Group messages by scene to create conversations
       const conversationMap = new Map<string, Conversation>();
+      const readMessages = sessionData.readMessages || [];
 
-      // Get all scenes that have been visited
-      const visitedScenes = sessionData.scenesVisited || [];
+      // Get all messages and group them by scene
+      const allMessages = sessionData.messages || [];
       
-      visitedScenes.forEach(sceneId => {
+      // Group messages by scene
+      const messagesByScene = new Map<string, Message[]>();
+      
+      allMessages.forEach(msg => {
+        const sceneId = msg.sceneId || 'unknown';
+        if (!messagesByScene.has(sceneId)) {
+          messagesByScene.set(sceneId, []);
+        }
+        messagesByScene.get(sceneId)!.push(msg);
+      });
+
+      // Create conversations from grouped messages
+      messagesByScene.forEach((messages, sceneId) => {
         const scene = selectedStory.scenes.find(s => s.id === sceneId);
         if (scene) {
-          // Find messages for this scene
-          const sceneMessages = sessionData.messages?.filter(msg => {
-            // You might need to adjust this logic based on how you track which messages belong to which scene
-            // For now, we'll use a simple approach
-            return true; // Include all messages for now
-          }) || [];
-
-          // Get the last message for this scene
-          const lastMessage = sceneMessages.length > 0 ? sceneMessages[sceneMessages.length - 1] : null;
+          // Filter out system messages and user messages for unread count
+          const assistantMessages = messages.filter(msg => msg.sender === 'assistant');
+          const unreadMessages = assistantMessages.filter(msg => !readMessages.includes(msg.id));
+          
+          const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
 
           conversationMap.set(sceneId, {
             sceneId,
-            sceneName: (scene.id),
+            sceneName: scene.id,
             characterName: scene.characterName || 'Character',
-            characterAvatar: imageMap.assistantAvatar, // You might want to make this scene-specific
+            characterAvatar: imageMap.assistantAvatar,
             lastMessage,
-            messageCount: sceneMessages.length,
+            messageCount: messages.length,
+            unreadCount: unreadMessages.length,
+            hasUnread: unreadMessages.length > 0,
             lastActivity: lastMessage?.timestamp || 'No messages',
           });
         }
       });
 
-      // Convert map to array and sort by last activity
+      // Convert map to array and sort by unread first, then by last activity
       const conversationList = Array.from(conversationMap.values()).sort((a, b) => {
+        // First sort by unread status
+        if (a.hasUnread && !b.hasUnread) return -1;
+        if (!a.hasUnread && b.hasUnread) return 1;
+        
+        // Then sort by last activity
         if (!a.lastMessage && !b.lastMessage) return 0;
         if (!a.lastMessage) return 1;
         if (!b.lastMessage) return -1;
         
-        // Sort by timestamp (you might need to adjust this based on your timestamp format)
         return b.lastActivity.localeCompare(a.lastActivity);
       });
 
@@ -108,7 +155,31 @@ const MessageHubScreen: React.FC<MessageHubScreenProps> = ({ navigation, route }
     }
   };
 
-  const handleConversationPress = (conversation: Conversation) => {
+  const handleConversationPress = async (conversation: Conversation) => {
+    // Mark messages as read when entering conversation
+    if (conversation.hasUnread && session) {
+      try {
+        const allMessages = session.messages || [];
+        const sceneMessages = allMessages.filter(msg => msg.sceneId === conversation.sceneId);
+        const assistantMessages = sceneMessages.filter(msg => msg.sender === 'assistant');
+        const currentReadMessages = session.readMessages || [];
+        
+        // Add unread message IDs to read list
+        const newReadMessages = [...currentReadMessages];
+        assistantMessages.forEach(msg => {
+          if (!newReadMessages.includes(msg.id)) {
+            newReadMessages.push(msg.id);
+          }
+        });
+
+        await updateCurrentSession({
+          readMessages: newReadMessages,
+        });
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+    }
+
     navigation.navigate('Chat', {
       storyId,
       sessionId,
@@ -122,19 +193,37 @@ const MessageHubScreen: React.FC<MessageHubScreenProps> = ({ navigation, route }
     
     return (
       <TouchableOpacity
-        style={styles.conversationItem}
+        style={[
+          styles.conversationItem,
+          item.hasUnread && styles.conversationItemUnread
+        ]}
         onPress={() => handleConversationPress(item)}
         activeOpacity={0.7}
       >
-        <Image source={item.characterAvatar} style={styles.avatar} />
+        <View style={styles.avatarContainer}>
+          <Image source={item.characterAvatar} style={styles.avatar} />
+          {item.hasUnread && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
+            </View>
+          )}
+        </View>
         
         <View style={styles.conversationContent}>
           <View style={styles.conversationHeader}>
-            <Text style={styles.characterName}>{item.characterName}</Text>
+            <Text style={[
+              styles.characterName,
+              item.hasUnread && styles.characterNameUnread
+            ]}>
+              {item.characterName}
+            </Text>
             <Text style={styles.sceneName}>({item.sceneName})</Text>
           </View>
           
-          <Text style={styles.lastMessage} numberOfLines={2}>
+          <Text style={[
+            styles.lastMessage,
+            item.hasUnread && styles.lastMessageUnread
+          ]} numberOfLines={2}>
             {isUserMessage ? 'You: ' : ''}{displayLastMessage}
           </Text>
           
@@ -241,11 +330,35 @@ const styles = {
     shadowRadius: 4,
     elevation: 3,
   },
+  conversationItemUnread: {
+    backgroundColor: '#f0f9ff',
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  avatarContainer: {
+    position: 'relative' as const,
+    marginRight: 12,
+  },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 12,
+  },
+  unreadBadge: {
+    position: 'absolute' as const,
+    top: -2,
+    right: -2,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  unreadBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold' as const,
   },
   conversationContent: {
     flex: 1,
@@ -261,6 +374,9 @@ const styles = {
     color: colors.textDark,
     marginRight: 8,
   },
+  characterNameUnread: {
+    color: colors.primary,
+  },
   sceneName: {
     fontSize: 12,
     color: colors.textDark,
@@ -271,6 +387,9 @@ const styles = {
     color: colors.textDark,
     marginBottom: 8,
     lineHeight: 20,
+  },
+  lastMessageUnread: {
+    fontWeight: 'bold' as const,
   },
   conversationFooter: {
     flexDirection: 'row' as const,
