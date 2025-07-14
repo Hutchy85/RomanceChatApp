@@ -63,19 +63,24 @@ const StorySceneScreen: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => {
     const updateSessionProgress = async () => {
       if (currentSession && sceneId && !isPrologue) {
-        try {
-          // Add scene to visited scenes if not already there
-          const updatedScenesVisited = currentSession.scenesVisited.includes(sceneId)
-            ? currentSession.scenesVisited
-            : [...currentSession.scenesVisited, sceneId];
+        const isSceneAlreadyVisited = currentSession.scenesVisited.includes(sceneId);
+        const isCurrentScene = currentSession.currentSceneId === sceneId;
 
-          await updateCurrentSession({
-            currentSceneId: sceneId,
-            scenesVisited: updatedScenesVisited,
-            lastPlayedAt: new Date().toISOString(),
-          });
-        } catch (error) {
-          console.error('Failed to update session progress:', error);
+        if (!isCurrentScene || !isSceneAlreadyVisited) {
+          try {
+            // Add scene to visited scenes if not already there
+            const updatedScenesVisited = isSceneAlreadyVisited
+              ? currentSession.scenesVisited
+              : [...currentSession.scenesVisited, sceneId];
+
+            await updateCurrentSession({
+              currentSceneId: sceneId,
+              scenesVisited: updatedScenesVisited,
+              lastPlayedAt: new Date().toISOString(),
+            });
+          } catch (error) {
+            console.error('Failed to update session progress:', error);
+          }
         }
       }
     };

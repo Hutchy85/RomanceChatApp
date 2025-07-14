@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import { TouchableOpacity, Text } from 'react-native';
 // Import screens
 import StorySelectionScreen from '../screens/StorySelectionScreen';
 import StorySceneScreen from '../screens/StorySceneScreen';
@@ -154,18 +155,19 @@ const Navigation = () => {
         <Stack.Screen 
   name="StoryScene" 
   component={StorySceneScreen} 
-  options={({ route }) => ({ 
+  options={({ route, navigation }) => ({ 
     title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
-    headerBackTitle: 'Sessions',
-    headerBackground: () => (
-      <LinearGradient
-        colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
-        style={{ flex: 1 }}
-      />
-    ),
-  })}
-/>
-
+    //headerBackTitle: 'Stories',
+    //            headerLeft: () => null,
+    //            headerRight: () => <TouchableOpacity onPress={() => navigation.navigate('StorySelection')} style={{ marginRight: 15 }}><Text style={{ color: 'white' }}>Stories</Text></TouchableOpacity>,
+    //            headerBackground: () => (
+    //                <LinearGradient colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
+    //    style={{ flex: 1 }}
+    //  />
+    //),
+  })}>
+    
+  </Stack.Screen>
       <Stack.Screen
         name="MessageHub"
         component={MessageHub}
@@ -178,17 +180,17 @@ const Navigation = () => {
         {/* Chat screen with session management */}
         <Stack.Screen
   name="Chat"
-  component={ChatScreen}
-  options={({ route }) => ({
-    title: 'Chat',
-    headerBackTitle: 'Stories',
-    headerLeft: () => null,
-    headerBackground: () => (
-      <LinearGradient
-        colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
-        style={{ flex: 1 }}
-      />
-    ),
+            component={ChatScreen}
+            options={({ route, navigation }) => ({
+                title: 'Chat',
+  //              headerBackTitle: 'Stories',
+  //              headerLeft: () => null,
+  //              headerRight: () => <TouchableOpacity onPress={() => navigation.navigate('StorySelection')} style={{ marginRight: 15 }}><Text style={{ color: 'white' }}>Stories</Text></TouchableOpacity>,
+  //              headerBackground: () => (
+  //                  <LinearGradient colors={['#ff6b6b', 'rgba(255, 107, 107, 0.6)', 'transparent']}
+  //      style={{ flex: 1 }}
+  //    />
+  //  ),
   })}
 />
 

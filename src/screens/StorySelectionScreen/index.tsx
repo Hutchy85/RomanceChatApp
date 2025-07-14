@@ -20,6 +20,7 @@ import { imageMap }from '../../data/imageMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { commonStyles, enhancedStyles, } from '../../styles';
 import { playBackgroundMusic, stopBackgroundMusic, playSoundEffect } from '../../utils/AudioManager';
+
 type StorySelectionScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'StorySelection'>;
 };
@@ -36,8 +37,11 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [isProcessingStoryAction, setIsProcessingStoryAction] = useState<string | null>(null);
 
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [slideAnim] = useState(new Animated.Value(50));
+  // Create animated values with useRef to prevent recreation on every render
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(50)).current;
+
+  // Remove fadeAnim and slideAnim from dependencies since they're stable refs
   const loadStorySessionStates = useCallback(async () => {
     setIsLoadingSessions(true);
     try {
@@ -59,7 +63,7 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
       );
       setStories(storiesWithStates);
 
-       Animated.parallel([
+      Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 800,
@@ -84,18 +88,18 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
     } finally {
       setIsLoadingSessions(false);
     }
-  }, [fadeAnim, slideAnim]);
+  }, []); // Empty dependency array since we don't depend on changing values
 
   useEffect(() => {
-  const unsubscribe = navigation.addListener('focus', () => {
-    loadStorySessionStates();
-    playBackgroundMusic();
-  });
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadStorySessionStates();
+      playBackgroundMusic();
+    });
 
-  return () => {
-    unsubscribe();
-  };
-}, [navigation, loadStorySessionStates]);
+    return () => {
+      unsubscribe();
+    };
+  }, [navigation, loadStorySessionStates]);
 
   const handleStartStory = async (storyId: string) => {
     setIsProcessingStoryAction(storyId);
@@ -197,7 +201,7 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
         {
           translateY: slideAnim.interpolate({
             inputRange: [0, 50],
-            outputRange: [0, 50],
+            outputRange: [0, 50 + (index * 10)],
           })
         }
       ]
@@ -208,17 +212,6 @@ const StorySelectionScreen: React.FC<StorySelectionScreenProps> = ({ navigation 
         style={[
           enhancedStyles.storyCard,
           itemAnimatedStyle,
-          { 
-            // Stagger animation based on index
-            transform: [
-              {
-                translateY: slideAnim.interpolate({
-                  inputRange: [0, 50],
-                  outputRange: [0, 50 + (index * 10)],
-                })
-              }
-            ]
-          }
         ]}
       >
         {/* Enhanced image container with overlay */}

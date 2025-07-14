@@ -86,12 +86,12 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
 }, []);
 
   useEffect(() => {
-    if (currentSession && sceneId) {
+    if (currentSession && sceneId && currentSession.currentSceneId !== sceneId) {
       updateCurrentSession({ currentSceneId: sceneId }).catch(err => {
         console.error('Failed to update currentSceneId:', err);
       });
     }
-  }, [sceneId, currentSession]);
+  }, [sceneId, currentSession, updateCurrentSession]);
   // Initialize chat session
   useEffect(() => {
     initializeChatSession();
@@ -139,7 +139,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ navigation, route }) => {
         // Filter messages for current scene
         const sceneMessages = session.messages.filter(msg => msg.sceneId === sceneId);
         // Ensure messages have all required fields for Message type
-        const transformedMessages = session.messages.map((msg: any) => ({
+        const transformedMessages = sceneMessages.map((msg: any) => ({
           id: msg.id,
           text: msg.text,
           image: msg.image,
@@ -446,10 +446,8 @@ return (
         keyboardShouldPersistTaps="always"
       />
 
-      <View style={[
-  commonStyles.footerContainer, 
-  { paddingBottom: isKeyboardVisible ? 8 : insets.bottom }
-]}>
+      <View style={
+  commonStyles.footerContainer}>
         {isSending && (
           <View style={commonStyles.typingContainer}>
             <ActivityIndicator size="small" color={colors.secondary} />
