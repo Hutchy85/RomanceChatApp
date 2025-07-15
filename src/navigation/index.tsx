@@ -157,7 +157,7 @@ const Navigation = () => {
   component={StorySceneScreen} 
   options={({ route, navigation }) => ({ 
     title: route.params.isPrologue ? 'Story Prologue' : 'Story Scene',
-    //headerBackTitle: 'Stories',
+    headerBackTitle: 'Stories',
     //            headerLeft: () => null,
     //            headerRight: () => <TouchableOpacity onPress={() => navigation.navigate('StorySelection')} style={{ marginRight: 15 }}><Text style={{ color: 'white' }}>Stories</Text></TouchableOpacity>,
     //            headerBackground: () => (
@@ -183,7 +183,7 @@ const Navigation = () => {
             component={ChatScreen}
             options={({ route, navigation }) => ({
                 title: 'Chat',
-  //              headerBackTitle: 'Stories',
+                headerBackTitle: 'Stories',
   //              headerLeft: () => null,
   //              headerRight: () => <TouchableOpacity onPress={() => navigation.navigate('StorySelection')} style={{ marginRight: 15 }}><Text style={{ color: 'white' }}>Stories</Text></TouchableOpacity>,
   //              headerBackground: () => (
